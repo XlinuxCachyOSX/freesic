@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Musica — player senza pubblicità</title>
+<link rel="stylesheet" href="/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♪</text></svg>">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><span class="logo">▶</span><span>Musica</span></div>
+    <nav class="menu">
+      <button class="nav-item attivo" data-view="home"><span class="ic">⌂</span>Home</button>
+      <button class="nav-item" data-view="search"><span class="ic">⌕</span>Ricerca</button>
+    </nav>
+    <div class="menu-titolo">La tua libreria</div>
+    <div id="libreria" class="libreria">
+      <p class="vuoto">Le playlist che ascolti vengono salvate qui.</p>
+    </div>
+  </aside>
+
+  <main class="contenuto">
+    <header class="barra">
+      <form id="form-ricerca" class="ricerca">
+        <input id="q" type="search" placeholder="Cerca canzoni, album, artisti, playlist" autocomplete="off">
+        <button type="submit" title="Cerca">⌕</button>
+      </form>
+      <div id="chips" class="chips"></div>
+    </header>
+    <section id="vista" class="vista"><p class="vuoto">Caricamento…</p></section>
+  </main>
+
+  <aside id="coda" class="coda nascosto">
+    <header class="coda-testa">
+      <strong>Coda di riproduzione</strong>
+      <button id="chiudi-coda" title="Chiudi">✕</button>
+    </header>
+    <ol id="lista-coda" class="lista-coda"></ol>
+  </aside>
+</div>
+
+<footer class="player">
+  <div class="player-info">
+    <img id="copertina" alt="" class="copertina">
+    <div class="testi">
+      <div id="titolo-brano" class="titolo">—</div>
+      <div id="artista-brano" class="artista"></div>
+    </div>
+  </div>
+
+  <div class="player-centro">
+    <div class="controlli">
+      <button id="prec" title="Precedente">⏮</button>
+      <button id="play" class="play" title="Riproduci">▶</button>
+      <button id="succ" title="Successivo">⏭</button>
+    </div>
+    <div class="barra-avanzamento">
+      <span id="tempo-attuale" class="tempo">0:00</span>
+      <input id="seek" type="range" min="0" max="1000" value="0" step="1">
+      <span id="tempo-totale" class="tempo">0:00</span>
+    </div>
+  </div>
+
+  <div class="player-destra">
+    <button id="btn-coda" title="Coda">≡</button>
+    <span class="ic-volume">🔊</span>
+    <input id="volume" type="range" min="0" max="100" value="100" step="1">
+  </div>
+</footer>
+
+<audio id="audio" preload="none"></audio>
+<script src="/app.js"></script>
+</body>
+</html>
