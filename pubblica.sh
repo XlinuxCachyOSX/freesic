@@ -64,7 +64,7 @@ if [ -n "$LOGIN" ]; then
 fi
 
 # 2) repository
-if "$GH" repo view "$NOME" >/dev/null 2>&1; then
+if "$GH" repo view "$LOGIN/$NOME" >/dev/null 2>&1; then
   echo "Repository $NOME gia esistente: procedo con il push."
   git remote remove origin 2>/dev/null || true
   git remote add origin "https://github.com/$LOGIN/$NOME.git"
@@ -82,7 +82,7 @@ else
 fi
 git push -u origin main
 
-URL=$("$GH" repo view "$NOME" --json url --jq .url 2>/dev/null || echo "https://github.com/$LOGIN/$NOME")
+URL=$("$GH" repo view "$LOGIN/$NOME" --json url --jq .url 2>/dev/null || echo "https://github.com/$LOGIN/$NOME")
 echo ""
 echo "Pubblicato: $URL"
 echo "Per avviare il sito: ./start.sh  (il browser si apre da solo)"
