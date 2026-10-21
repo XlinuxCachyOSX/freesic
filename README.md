@@ -177,32 +177,6 @@ cd android && ./build-apk.sh
 L'APK risultante viene copiato nella cartella del progetto
 (`FreeSic-1.0.0.apk`).
 
-## Pubblicare su GitHub
-
-Il comando va eseguito **dentro** la cartella del progetto:
-
-```bash
-cd "Default Project/freesic"
-./pubblica.sh                 # crea il repository e fa il push
-./pubblica.sh altro-nome     # sceglie un altro nome
-```
-
-Lo script usa GitHub CLI: se non è installato lo scarica in `./.gh`, poi chiede
-il login (via browser: compare un codice da confermare) e infine crea il
-repository e carica il codice. Se il repository esiste già lo riusa.
-In alternativa, senza script:
-
-```bash
-git remote add origin https://github.com/<utente>/<repository>.git
-git push -u origin main
-```
-
-Se preferisci usare un token personale invece del login:
-
-```bash
-export GH_TOKEN=ghp_xxxxxxxxxxxx
-./pubblica.sh
-```
 
 ## Test
 
