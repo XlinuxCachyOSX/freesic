@@ -177,7 +177,6 @@ cd android && ./build-apk.sh
 L'APK risultante viene copiato nella cartella del progetto
 (`FreeSic-1.0.0.apk`).
 
-
 ## Test
 
 ```bash
