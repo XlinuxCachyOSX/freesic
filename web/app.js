@@ -121,7 +121,14 @@ function apriModale(modalita) {
   modale.classList.remove("nascosto");
   aggiornaSchede();
   document.getElementById("acc-errore").textContent = "";
-  document.getElementById("acc-utente").focus();
+  const campoUtente = document.getElementById("acc-utente");
+  // ricorda l'ultimo nome utente usato
+  try {
+    const ultimo = localStorage.getItem("freesic.ultimo_utente");
+    if (ultimo && !campoUtente.value) campoUtente.value = ultimo;
+  } catch (e) { /* storage non disponibile */ }
+  document.getElementById("acc-password").value = "";
+  campoUtente.focus();
 }
 
 function chiudiModale() {
@@ -149,6 +156,7 @@ async function inviaAccount(e) {
     const d = await api(percorso, { metodo: "POST", corpo: { username: nome, password } });
     stato.utente = d.utente || nome;
     document.getElementById("acc-password").value = "";
+    try { localStorage.setItem("freesic.ultimo_utente", stato.utente); } catch (e) { /* storage non disponibile */ }
     chiudiModale();
     disegnaAccount();
     await caricaPiaciuti();

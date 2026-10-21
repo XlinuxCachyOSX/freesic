@@ -2,7 +2,9 @@
 
 Gli utenti sono salvati in locale (dati/utenti.json) con password hashed:
 non serve alcun account YouTube e nulla lascia il computer. Le sessioni
-sono token casuali tenuti in memoria, con cookie HttpOnly.
+sono token casuali tenuti su disco (dati/sessioni.json), cosi' l'accesso
+resta valido anche riavviando il server; nel file viene salvato solo
+l'hash del token, mai il token stesso.
 """
 import hashlib
 import hmac
@@ -16,6 +18,7 @@ BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATI = os.path.join(BASE, "dati")
 FILE_UTENTI = os.path.join(DATI, "utenti.json")
 FILE_PIACI = os.path.join(DATI, "mi_piace.json")
+FILE_SESSIONI = os.path.join(DATI, "sessioni.json")
 COOKIE = "freesic_session"
 DURATA_SESSIONE = 60 * 60 * 24 * 30  # 30 giorni
 ITERAZIONI = 120_000
@@ -32,6 +35,11 @@ _lock = threading.RLock()
 _sessioni: dict[str, tuple[str, float]] = {}
 
 
+def _chiave_token(token: str) -> str:
+    """Nel file viene salvato solo l'hash del token, non il token."""
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
 def _leggi(path: str) -> dict:
     try:
         with open(path, encoding="utf-8") as f:
@@ -46,6 +54,24 @@ def _scrivi(path: str, dati: dict) -> None:
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(dati, f, ensure_ascii=False, indent=2)
     os.replace(tmp, path)
+
+
+def _salva_sessioni() -> None:
+    _scrivi(FILE_SESSIONI, {k: [v[0], v[1]] for k, v in _sessioni.items()})
+
+
+def _carica_sessioni() -> None:
+    """Rilegge le sessioni salvate: l'accesso resta valido dopo un riavvio."""
+    with _lock:
+        _sessioni.clear()
+        ora = time.time()
+        for chiave, voce in _leggi(FILE_SESSIONI).items():
+            try:
+                utente, scadenza = voce[0], float(voce[1])
+            except (TypeError, ValueError, IndexError):
+                continue
+            if utente and scadenza > ora:
+                _sessioni[chiave] = (str(utente), scadenza)
 
 
 def _hash(password: str, sale: bytes) -> str:
@@ -96,27 +122,38 @@ def accedi(nome: str, password: str) -> str:
 def token_sessione(utente: str) -> str:
     token = secrets.token_urlsafe(32)
     with _lock:
-        _sessioni[token] = (utente, time.time() + DURATA_SESSIONE)
+        _sessioni[_chiave_token(token)] = (utente, time.time() + DURATA_SESSIONE)
+        _salva_sessioni()
     return token
 
 
 def utente_da_token(token: str | None) -> str | None:
     if not token:
         return None
+    chiave = _chiave_token(token)
     with _lock:
-        scadono = [t for t, (_, scadenza) in _sessioni.items() if scadenza < time.time()]
-        for t in scadono:
-            _sessioni.pop(t, None)
-        voce = _sessioni.get(token)
-        if not voce:
+        ora = time.time()
+        scadute = [k for k, (_, scadenza) in _sessioni.items() if scadenza < ora]
+        for k in scadute:
+            _sessioni.pop(k, None)
+        voce = _sessioni.get(chiave)
+        if voce is None:
+            if scadute:
+                _salva_sessioni()
             return None
+        # la scadenza scorre: chi usa l'app ogni giorno non viene sloggato
+        if voce[1] - ora < DURATA_SESSIONE / 2:
+            _sessioni[chiave] = (voce[0], ora + DURATA_SESSIONE)
+            _salva_sessioni()
         return voce[0]
 
 
 def chiudi_sessione(token: str | None) -> None:
-    if token:
-        with _lock:
-            _sessioni.pop(token, None)
+    if not token:
+        return
+    with _lock:
+        if _sessioni.pop(_chiave_token(token), None) is not None:
+            _salva_sessioni()
 
 
 # --------------------------------------------------------------------------
@@ -172,3 +209,7 @@ def playlist_piaciuta(nome: str) -> dict:
         "thumbnail": brani[0]["thumbnail"] if brani else "",
         "items": brani,
     }
+
+
+# le sessioni vengono rilette all'avvio del server
+_carica_sessioni()

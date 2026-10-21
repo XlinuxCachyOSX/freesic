@@ -13,7 +13,9 @@ al browser, il frontend è una web app in stile YouTube Music.
   brano, o niente. La scelta resta anche dopo aver chiuso il browser.
 - Tema chiaro o scuro (predefinito: quello del sistema), salvato nel browser.
 - Account facoltativo, salvato **solo su questo computer**: serve per mettere
-  "mi piace" ai brani e ritrovarli nella playlist **Piaciuta**.
+  "mi piace" ai brani e ritrovarli nella playlist **Piaciuta**. L'accesso resta
+  valido anche riavviando il server o il computer (la sessione è salvata in
+  `dati/sessioni.json`, dove si tiene solo l'hash del token).
 - Versione Android (APK) che mostra la stessa interfaccia.
 
 ## Scarica
