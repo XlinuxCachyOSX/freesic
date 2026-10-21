@@ -16,15 +16,24 @@ al browser, il frontend è una web app in stile YouTube Music.
 
 ## Scarica
 
-| Versione | Dispositivo | File |
+| Versione | Sistema | File |
 |---|---|---|
-| 1.0.0 (release) | Android 5.0+ | [FreeSic-1.0.0.apk](https://github.com/XlinuxCachyOSX/freesic/raw/main/FreeSic-1.0.0.apk) |
-| 1.0.0 (debug) | Android 5.0+ | [FreeSic-debug.apk](https://github.com/XlinuxCachyOSX/freesic/raw/main/FreeSic-debug.apk) |
+| 1.0.0 (release) | Linux (x64) | [FreeSic-1.0.0-linux.zip](https://github.com/XlinuxCachyOSX/freesic/releases/download/v1.0.0/FreeSic-1.0.0-linux.zip) |
+| 1.0.0 (release) | Windows (x64) | [FreeSic-1.0.0-windows.zip](https://github.com/XlinuxCachyOSX/freesic/releases/download/v1.0.0/FreeSic-1.0.0-windows.zip) |
+| 1.0.0 (release) | macOS (Intel/Apple silicon) | [FreeSic-1.0.0-macos.zip](https://github.com/XlinuxCachyOSX/freesic/releases/download/v1.0.0/FreeSic-1.0.0-macos.zip) |
+| 1.0.0 (release) | Android 5.0+ | [FreeSic-1.0.0.apk](https://github.com/XlinuxCachyOSX/freesic/releases/download/v1.0.0/FreeSic-1.0.0.apk) |
+| 1.0.0 (debug) | Android 5.0+ | [FreeSic-debug.apk](https://github.com/XlinuxCachyOSX/freesic/releases/download/v1.0.0/FreeSic-debug.apk) |
 
-Su computer: Linux/macOS con `./start.sh`, Windows con `start.bat`.
-L'APK è il guscio: per ascoltare serve il server acceso sul computer
-(`./start.sh` con `HOST=0.0.0.0`) e l'indirizzo del PC da inserire nel menu
-dell'app. Tutte le impostazioni (ricerca, tema, "mi piace") sono le stesse
+I file zip contengono il progetto pronto: si decomprime e si avvia.
+
+- Linux e macOS: `./start.sh`
+- Windows: `start.bat`
+
+Serve Python 3.10 o successivo: al primo avvio lo script crea da solo
+l'ambiente virtuale e installa le dipendenze (serve una connessione internet
+solo per quella operazione). L'APK è il guscio: per ascoltare serve il server
+acceso sul computer (`./start.sh` con `HOST=0.0.0.0`) e l'indirizzo del PC da
+inserire nel menu dell'app. Ricerca, tema e "mi piace" sono le stesse cose
 del sito.
 
 ```
