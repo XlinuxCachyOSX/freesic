@@ -1,14 +1,14 @@
 #!/bin/sh
 # Compila l'APK Android di FreeSic.
 #
-#   ./build-apk.sh              -> dist/FreeSic-1.0.0.apk
+#   ./build-apk.sh              -> FreeSic-1.0.0.apk (nella cartella del progetto)
 #
-# Scarica e usa JDK 17, Android SDK e Gradle in ~/android-toolchain
-# (nessuna installazione di sistema richiesta).
+# Scarica e usa JDK 17, Android SDK e Gradle nella cartella "toolchain" del
+# progetto (nessuna installazione di sistema richiesta).
 set -e
 
 PROGETTO="$(cd "$(dirname "$0")" && pwd)"
-BASE="${ANDROID_TOOLCHAIN:-$HOME/android-toolchain}"
+BASE="${ANDROID_TOOLCHAIN:-$PROGETTO/../toolchain}"
 SDK="$BASE/android-sdk"
 mkdir -p "$BASE" && cd "$BASE"
 
@@ -39,7 +39,7 @@ if [ ! -x "$BASE/gradle/bin/gradle" ] && [ ! -x "$BASE/gradle-8.7/bin/gradle" ];
   echo "== Gradle =="
   curl -sSL -o gradle.zip "https://services.gradle.org/distributions/gradle-8.7-bin.zip"
   unzip -q gradle.zip && rm gradle.zip
-  ln -sfn "$BASE/gradle-8.7" "$BASE/gradle"
+  ln -sfn gradle-8.7 "$BASE/gradle"
 fi
 
 GRADLE="$BASE/gradle/bin/gradle"
@@ -51,11 +51,10 @@ echo "sdk.dir=$SDK" > local.properties
 echo "== build =="
 "$GRADLE" --no-daemon assembleRelease assembleDebug
 
-mkdir -p "$PROGETTO/../dist"
 VERSIONE=$(sed -nE 's/.*versionName "([^"]+)".*/\1/p' app/build.gradle | head -1)
-cp app/build/outputs/apk/release/app-release.apk "$PROGETTO/../dist/FreeSic-$VERSIONE.apk"
-cp app/build/outputs/apk/debug/app-debug.apk "$PROGETTO/../dist/FreeSic-debug.apk"
+cp app/build/outputs/apk/release/app-release.apk "$PROGETTO/../FreeSic-$VERSIONE.apk"
+cp app/build/outputs/apk/debug/app-debug.apk "$PROGETTO/../FreeSic-debug.apk"
 
 echo ""
 echo "APK pronto:"
-ls -lh "$PROGETTO/../dist"
+ls -lh "$PROGETTO"/../FreeSic*.apk

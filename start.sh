@@ -109,19 +109,9 @@ PORT="${PORT:-8000}"
 HOST="${HOST:-127.0.0.1}"
 
 porta_libera() {
-  "$RUNPY" - "$1" "$HOST" <<'PY' >/dev/null 2>&1
-import socket, sys
-s = socket.socket()
-s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-try:
-    s.bind((sys.argv[2], int(sys.argv[1])))
-except OSError:
-    sys.exit(1)
-finally:
-    s.close()
-PY
+  # stampa la prima porta libera a partire da $1 (vedi strumenti/porta.py)
+  "$RUNPY" strumenti/porta.py "$1" "$HOST"
 }
-
 # Chiude una nostra precedente istanza (stessa cartella) che occupa la porta.
 chiudi_precedenti() {
   for pid in $(pgrep -f "server.main:app" 2>/dev/null); do
@@ -136,23 +126,16 @@ chiudi_precedenti() {
   sleep 1
 }
 
-if ! porta_libera "$PORT"; then
+PORT_TROVATA=$(porta_libera "$PORT")
+if [ "$PORT_TROVATA" != "$PORT" ]; then
+  # la porta richiesta e' occupata: chiudo la nostra istanza precedente e riprovo
   chiudi_precedenti
-  if ! porta_libera "$PORT"; then
-    NUOVA="$PORT"
-    while [ "$NUOVA" -lt $((PORT + 20)) ]; do
-      NUOVA=$((NUOVA + 1))
-      if porta_libera "$NUOVA"; then break; fi
-    done
-    if [ "$NUOVA" -ge $((PORT + 20)) ]; then
-      echo "  Nessuna porta libera da $PORT a $((PORT + 19))."
-      exit 1
-    fi
-    echo "  La porta $PORT e' occupata: uso la porta $NUOVA."
-    PORT="$NUOVA"
+  PORT_TROVATA=$(porta_libera "$PORT")
+  if [ "$PORT_TROVATA" != "$PORT" ]; then
+    echo "  La porta $PORT e' occupata: uso la porta $PORT_TROVATA."
+    PORT="$PORT_TROVATA"
   fi
 fi
-
 SITO="http://$HOST:$PORT/"
 [ "$HOST" = "0.0.0.0" ] && SITO="http://127.0.0.1:$PORT/"
 

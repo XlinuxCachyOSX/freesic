@@ -97,15 +97,15 @@ Documentazione interattiva: <http://127.0.0.1:8000/api/docs>.
 
 ## Versione Android (APK)
 
-L'app Android è un contenitore WebView che mostra la stessa interfaccia: il
+L'app Android FreeSic è un contenitore WebView che mostra la stessa interfaccia: il
 backend Python resta sul computer e l'app si collega a lui.
 
-APK già compilati in `dist/`:
+APK già compilati, nella stessa cartella del progetto:
 
 | file | uso |
 |---|---|
-| `MusicaSenzaPubblicita-1.0.0.apk` | release (installabile, non debuggabile) |
-| `MusicaSenzaPubblicita-debug.apk` | versione debug |
+| `FreeSic-1.0.0.apk` | release (installabile, non debuggabile) |
+| `FreeSic-debug.apk` | versione debug |
 
 Installazione sul telefono: copia l'APK sul dispositivo, aprilo e autorizza
 l'installazione da sorgenti sconosciute.
@@ -123,12 +123,16 @@ Configurazione:
 Su un emulatore Android l'indirizzo predefinito `http://10.0.2.2:8000/` punta
 già alla macchina che esegue l'emulatore.
 
-Per ricompilare l'APK (scarica da solo JDK 17, Android SDK e Gradle in
-`~/android-toolchain`, senza installare nulla a livello di sistema):
+Per ricompilare l'APK (usa JDK 17, Android SDK e Gradle già presenti nella
+cartella `toolchain/` del progetto; se mancano vengono scaricati, senza
+installare nulla a livello di sistema):
 
 ```bash
 cd android && ./build-apk.sh
 ```
+
+L'APK risultante viene copiato nella cartella del progetto
+(`FreeSic-1.0.0.apk`).
 
 ## Pubblicare su GitHub
 

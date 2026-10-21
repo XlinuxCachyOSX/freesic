@@ -76,10 +76,19 @@ if errorlevel 1 (
 :avvia
 if "%PORT%"=="" set PORT=8000
 if "%HOST%"=="" set HOST=127.0.0.1
+
+rem  cerca una porta libera (strumenti/porta.py)
+for /f %%p in ('.venv\Scripts\python.exe strumenti\porta.py %PORT% %HOST%') do set PORT_TROVATA=%%p
+if "%PORT_TROVATA%"=="" set PORT_TROVATA=%PORT%
+if not "%PORT_TROVATA%"=="%PORT%" (
+    echo   La porta %PORT% e' occupata: uso la porta %PORT_TROVATA%.
+    set PORT=%PORT_TROVATA%
+)
+
 set SITO=http://%HOST%:%PORT%
 if "%HOST%"=="0.0.0.0" set SITO=http://127.0.0.1:%PORT%
 echo.
-echo   Musica senza pubblicita - avvio del server...
+echo   FreeSic - avvio del server...
 echo   %SITO%
 echo.
 start "" cmd /c "timeout /t 3 >nul & start "" %SITO%"
