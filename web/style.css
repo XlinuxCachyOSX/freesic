@@ -368,6 +368,8 @@ input[type=range]::-webkit-slider-thumb {
 
 input[type=range]::-moz-range-thumb { width: 12px; height: 12px; border: 0; border-radius: 50%; background: var(--rosso); }
 .player-destra { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+#btn-loop { font-size: 19px; color: var(--grigio); line-height: 1; }
+#btn-loop.attivo { color: var(--rosso); }
 .ic-volume { opacity: .8; }
 .player-destra input[type=range] { width: 90px; flex: none; }
 

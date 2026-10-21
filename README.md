@@ -9,6 +9,8 @@ al browser, il frontend è una web app in stile YouTube Music.
 - Ricerca, album, playlist e stream audio diretti da YouTube Music, senza
   pubblicità, senza login e senza account.
 - La musica parte da sola appena apri il sito.
+- Pulsante di loop nel player: si sceglie se far ripartire la coda, lo stesso
+  brano, o niente. La scelta resta anche dopo aver chiuso il browser.
 - Tema chiaro o scuro (predefinito: quello del sistema), salvato nel browser.
 - Account facoltativo, salvato **solo su questo computer**: serve per mettere
   "mi piace" ai brani e ritrovarli nella playlist **Piaciuta**.

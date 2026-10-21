@@ -18,6 +18,7 @@ const stato = {
   utente: "",
   piaciuti: new Set(),
   modalita: "login",
+  loop: "nessuno",
 };
 
 /* ---------- tema chiaro / scuro ---------- */
@@ -469,6 +470,58 @@ function successivo() {
   else { audio.pause(); audio.currentTime = 0; aggiornaBarra(); }
 }
 
+/* ---------- loop: la musica ricomincia da sola quando finisce ---------- */
+const MODI_LOOP = ["nessuno", "coda", "uno"];
+const TESTI_LOOP = {
+  nessuno: "Loop disattivato: clicca per far ripartire la coda",
+  coda: "Loop della coda: a fine lista ricomincia dal primo brano",
+  uno: "Loop del brano: a fine brano riparte da capo",
+};
+
+function loopSalvato() {
+  try {
+    const salvato = localStorage.getItem("freesic.loop");
+    if (MODI_LOOP.includes(salvato)) return salvato;
+  } catch (e) { /* storage non disponibile */ }
+  return "nessuno";
+}
+
+function salvaLoop(modo) {
+  try { localStorage.setItem("freesic.loop", modo); } catch (e) { /* storage non disponibile */ }
+}
+
+function disegnaLoop() {
+  const bottone = document.getElementById("btn-loop");
+  if (!bottone) return;
+  const icone = { nessuno: "↻", coda: "∞", uno: "↺" };
+  bottone.textContent = icone[stato.loop];
+  bottone.classList.toggle("attivo", stato.loop !== "nessuno");
+  bottone.title = TESTI_LOOP[stato.loop];
+  bottone.setAttribute("aria-label", TESTI_LOOP[stato.loop]);
+}
+
+function cambiaLoop() {
+  const prossimo = MODI_LOOP[(MODI_LOOP.indexOf(stato.loop) + 1) % MODI_LOOP.length];
+  stato.loop = prossimo;
+  salvaLoop(prossimo);
+  disegnaLoop();
+}
+
+function aFineBrano() {
+  /* Fine brano: applica la modalita' scelta. */
+  if (stato.loop === "uno") {
+    audio.currentTime = 0;
+    audio.play().catch(() => { /* il browser blocca: riprova al prossimo click */ });
+    return;
+  }
+  if (stato.loop === "coda" && stato.coda.length) {
+    if (stato.indice + 1 < stato.coda.length) suona(stato.indice + 1);
+    else suona(0);
+    return;
+  }
+  successivo();
+}
+
 function precedente() {
   if (audio.currentTime > 4) { audio.currentTime = 0; return; }
   if (stato.indice > 0) suona(stato.indice - 1);
@@ -613,6 +666,7 @@ document.getElementById("play").addEventListener("click", () => {
 });
 
 document.getElementById("succ").addEventListener("click", successivo);
+document.getElementById("btn-loop").addEventListener("click", cambiaLoop);
 document.getElementById("prec").addEventListener("click", precedente);
 
 document.getElementById("seek").addEventListener("input", (e) => {
@@ -629,7 +683,7 @@ audio.addEventListener("loadedmetadata", () => {
 });
 audio.addEventListener("play", () => { document.getElementById("play").textContent = "⏸"; nascondiAvvio(); });
 audio.addEventListener("pause", () => { document.getElementById("play").textContent = "▶"; });
-audio.addEventListener("ended", successivo);
+audio.addEventListener("ended", aFineBrano);
 audio.addEventListener("error", () => {
   nascondiAvvio();
   if (audio.src) document.getElementById("artista-brano").textContent = "Stream non disponibile";
@@ -649,6 +703,8 @@ document.addEventListener("click", () => {
 
 /* ---------- avvio ---------- */
 applicaTema(temaPreferito());
+stato.loop = loopSalvato();
+disegnaLoop();
 caricaLibreria();
 vistaHome();
 caricaSessione();
