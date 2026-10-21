@@ -19,6 +19,7 @@ REQUISITES = BASE / "requirements.txt"
 PID_FILE = BASE / ".freesic.pid"
 TENTATIVI_PORTA = 20
 MODULI = ("uvicorn", "fastapi", "yt_dlp")
+VERSIONE_MINIMA = (3, 10)
 
 
 def messaggio(testo: str) -> None:
@@ -58,17 +59,6 @@ def crea_venv(py: Path) -> None:
         # ensurepip manca (Debian senza python3-venv): si crea senza pip
         shutil.rmtree(VENV, ignore_errors=True)
         venv.EnvBuilder(with_pip=False, clear=True).create(str(VENV))
-    if not esiste_pip(py):
-        # pip scaricato dal bootstrap ufficiale
-        messaggio("  pip non presente: lo scarico (get-pip.py)...")
-        script = BASE / ".get-pip.py"
-        try:
-            urllib.request.urlretrieve("https://bootstrap.pypa.io/get-pip.py", script)
-            subprocess.run([str(py), str(script)], check=False)
-        except Exception:
-            pass
-        finally:
-            script.unlink(missing_ok=True)
 
 
 def assicura_pip(py: Path) -> None:
@@ -89,6 +79,18 @@ def assicura_pip(py: Path) -> None:
     if site:
         subprocess.run([sys.executable, "-m", "pip", "install", "--upgrade", "--target", site, "pip"],
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+        if esiste_pip(py):
+            return
+    # pip scaricato dal bootstrap ufficiale
+    messaggio("  pip non presente: lo scarico (get-pip.py)...")
+    script = BASE / ".get-pip.py"
+    try:
+        urllib.request.urlretrieve("https://bootstrap.pypa.io/get-pip.py", script)
+        subprocess.run([str(py), str(script)], check=False)
+    except Exception:
+        pass
+    finally:
+        script.unlink(missing_ok=True)
 
 
 def assicura_dipendenze(py: Path) -> None:
@@ -97,7 +99,13 @@ def assicura_dipendenze(py: Path) -> None:
     messaggio("  Installo le dipendenze necessarie...")
     subprocess.run([str(py), "-m", "pip", "install", "--upgrade", "pip"],
                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
-    subprocess.run([str(py), "-m", "pip", "install", "-r", str(REQUISITES)], check=True)
+    try:
+        subprocess.run([str(py), "-m", "pip", "install", "-r", str(REQUISITES)], check=True)
+    except subprocess.CalledProcessError:
+        raise SystemExit(
+            "Installazione delle dipendenze fallita. Controlla la connessione e riprova:\n"
+            f"  {py} -m pip install -r {REQUISITES}"
+        )
 
 
 def processo_vivo(pid: int) -> bool:
@@ -142,10 +150,20 @@ def chiudi_istanza_precedente() -> None:
 
 
 def porta_libera(porta: int, host: str) -> bool:
+    """True se la porta e' davvero libera.
+
+    Su Windows SO_REUSEADDR permette a due socket di usare la stessa porta,
+    quindi si usa SO_EXCLUSIVEADDRUSE per un controllo affidabile.
+    """
     import socket
     s = socket.socket()
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     try:
+        if os.name == "nt":
+            esclusivo = getattr(socket, "SO_EXCLUSIVEADDRUSE", None)
+            if esclusivo is not None:
+                s.setsockopt(socket.SOL_SOCKET, esclusivo, 1)
+        else:
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind((host, porta))
         return True
     except OSError:
@@ -158,11 +176,19 @@ def scegli_porta(porta: int, host: str) -> int:
     for candidata in range(porta, porta + TENTATIVI_PORTA):
         if porta_libera(candidata, host):
             return candidata
-    return porta
+    raise SystemExit(
+        f"Nessuna porta libera da {porta} a {porta + TENTATIVI_PORTA - 1}. "
+        "Chiudi le altre istanze e riprova."
+    )
 
 
 def prepara(porta: int = 8000, host: str = "127.0.0.1") -> tuple[Path, int, str]:
     """Prepara tutto e restituisce (interprete venv, porta, host)."""
+    if sys.version_info < VERSIONE_MINIMA:
+        raise SystemExit(
+            f"Servono Python {VERSIONE_MINIMA[0]}.{VERSIONE_MINIMA[1]} o successivo "
+            f"(questo e' Python {sys.version_info.major}.{sys.version_info.minor})."
+        )
     py = percorso_python_venv(VENV)
     if not py.exists():
         crea_venv(py)
@@ -178,10 +204,9 @@ def prepara(porta: int = 8000, host: str = "127.0.0.1") -> tuple[Path, int, str]
     if not ci_sono_moduli(py):
         raise SystemExit(f"Dipendenze mancanti. Esegui: {py} -m pip install -r {REQUISITES}")
 
+    # chiude una nostra istanza precedente, cosi' la porta torna libera
+    chiudi_istanza_precedente()
     scelta = scegli_porta(porta, host)
     if scelta != porta:
-        chiudi_istanza_precedente()
-        scelta = scegli_porta(porta, host)
-        if scelta != porta:
-            messaggio(f"  La porta {porta} e' occupata: uso la porta {scelta}.")
+        messaggio(f"  La porta {porta} e' occupata: uso la porta {scelta}.")
     return py, scelta, host

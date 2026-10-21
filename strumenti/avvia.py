@@ -16,6 +16,10 @@ import prepara  # noqa: E402
 
 
 def main() -> int:
+    if sys.version_info < (3, 10):
+        print(f"\n  Servono Python 3.10 o successivo "
+              f"(questo e' Python {sys.version_info.major}.{sys.version_info.minor}).\n")
+        return 1
     porta = int(os.environ.get("PORT", "8000") or 8000)
     host = os.environ.get("HOST", "127.0.0.1") or "127.0.0.1"
     try:

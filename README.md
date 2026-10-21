@@ -25,6 +25,7 @@ al browser, il frontend è una web app in stile YouTube Music.
 | 1.0.0 (debug) | Android 5.0+ | [FreeSic-debug.apk](https://github.com/XlinuxCachyOSX/freesic/releases/download/v1.0.0/FreeSic-debug.apk) |
 
 I file zip contengono il progetto pronto: si decomprime e si avvia.
+(Per rigenerarli: `python strumenti/pacchetti.py`.)
 
 - Linux e macOS: `./start.sh`
 - Windows: `start.bat`

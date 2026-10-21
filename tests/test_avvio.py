@@ -41,9 +41,10 @@ class TestSceltaPorta(unittest.TestCase):
         self.assertLess(scelta, occupata + prepara.TENTATIVI_PORTA)
 
     def test_nessuna_porta_disponibile(self):
-        # se tutte le porte sono occupate si torna alla porta iniziale
+        # se tutte le porte sono occupate va segnalato subito all'utente
         with mock.patch.object(prepara, "porta_libera", return_value=False):
-            self.assertEqual(prepara.scegli_porta(8000, "127.0.0.1"), 8000)
+            with self.assertRaises(SystemExit):
+                prepara.scegli_porta(8000, "127.0.0.1")
 
 
 class TestIstanzaPrecedente(unittest.TestCase):
