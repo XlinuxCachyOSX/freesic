@@ -1,16 +1,16 @@
 @echo off
 cd /d "%~dp0"
-if exist .venv\Scripts\python.exe goto :avvia
+if exist .venv\Scripts\python.exe goto :dipendenze
 
 where py >nul 2>nul
 if %errorlevel%==0 (
     py -m venv .venv
-    goto :installa
+    goto :dipendenze
 )
 where python >nul 2>nul
 if %errorlevel%==0 (
     python -m venv .venv
-    goto :installa
+    goto :dipendenze
 )
 
 echo.
@@ -20,7 +20,12 @@ echo.
 pause
 exit /b 1
 
-:installa
+:dipendenze
+.venv\Scripts\python.exe -c "import uvicorn, fastapi, yt_dlp" >nul 2>nul
+if not errorlevel 1 goto :avvia
+echo.
+echo   Installo le dipendenze necessarie...
+echo.
 .venv\Scripts\python.exe -m pip install --upgrade pip
 .venv\Scripts\python.exe -m pip install -r requirements.txt
 

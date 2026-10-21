@@ -33,8 +33,6 @@ Linux/macOS:
 
 ```bash
 cd nuovo-progetto
-python3 -m venv .venv
-./.venv/bin/pip install -r requirements.txt
 ./start.sh
 ```
 
@@ -42,12 +40,11 @@ Windows (PowerShell o cmd):
 
 ```bat
 cd nuovo-progetto
-python -m venv .venv
-.venv\Scripts\pip install -r requirements.txt
 start.bat
 ```
 
-Lo script avvia il server e **apre da solo il browser** su
+Lo script crea l'ambiente virtuale `.venv`, installa le dipendenze se mancano,
+avvia il server e **apre da solo il browser** su
 <http://127.0.0.1:8000> (su Windows l'apertura avviene dopo 3 secondi).
 Per fermarlo basta `Ctrl+C`.
 
@@ -170,8 +167,3 @@ supporta le richieste `Range`.
   volume elevato conviene usare la cache.
 - Il progetto è a scopo personale/educativo: rispetta i termini di servizio di
   YouTube e il diritto d'autore delle opere distribuite.
-
-## Avvertenza
-
-Passafile Locale e la cartella `P3R_S0B3E/` presenti nella cartella superiore
-sono progetti separati e non vengono modificati da questo software.

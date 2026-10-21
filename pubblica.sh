@@ -16,16 +16,28 @@ GH=gh
 if ! command -v gh >/dev/null 2>&1; then
   echo "GitHub CLI non trovato: lo scarico in ./.gh ..."
   mkdir -p .gh
+  VERSIONE=$(curl -s https://api.github.com/repos/cli/cli/releases/latest \
+    | sed -nE 's/.*"tag_name": *"v([^"]+)".*/\1/p' | head -1)
+  case "$(uname -m)" in
+    x86_64)  ARCH=amd64 ;;
+    aarch64|arm64) ARCH=arm64 ;;
+    *) echo "Architettura non supportata: $ARCH"; exit 1 ;;
+  esac
   case "$(uname -s)" in
-    Linux)  URL="https://github.com/cli/cli/releases/latest/download/gh_$(uname -m).tar.gz" ;;
-    Darwin) URL="https://github.com/cli/cli/releases/latest/download/gh_$(uname -m).tar.gz" ;;
+    Linux)  OS=linux ;;
+    Darwin) OS=darwin ;;
     *) echo "Sistema non supportato per l'installazione automatica: installa 'gh' manualmente."; exit 1 ;;
   esac
+  URL="https://github.com/cli/cli/releases/download/v${VERSIONE}/gh_${VERSIONE}_${OS}_${ARCH}.tar.gz"
+  echo "  scarico $URL"
   if command -v curl >/dev/null 2>&1; then curl -sSL "$URL" -o .gh/gh.tar.gz
   elif command -v wget >/dev/null 2>&1; then wget -qO .gh/gh.tar.gz "$URL"
   else echo "Serve curl o wget per scaricare GitHub CLI."; exit 1
   fi
-  tar -xzf .gh/gh.tar.gz -C .gh --strip-components=1
+  if ! tar -xzf .gh/gh.tar.gz -C .gh --strip-components=1; then
+    echo "Scaricamento non riuscito. Installa 'gh' manualmente e rilancia."; exit 1
+  fi
+  rm -f .gh/gh.tar.gz
   GH="$PWD/.gh/bin/gh"
 fi
 

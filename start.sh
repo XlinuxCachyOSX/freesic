@@ -10,6 +10,11 @@ command -v "$PY" >/dev/null 2>&1 || PY=python
 if [ ! -d .venv ]; then
   echo "Creo l'ambiente virtuale (una volta sola)..."
   "$PY" -m venv .venv
+fi
+
+# Installa le dipendenze solo se mancano davvero (venv creato a mano, ecc.)
+if ! ./.venv/bin/python -c "import uvicorn, fastapi, yt_dlp" >/dev/null 2>&1; then
+  echo "Installo le dipendenze necessarie..."
   ./.venv/bin/python -m pip install --upgrade pip >/dev/null
   ./.venv/bin/python -m pip install -r requirements.txt
 fi
