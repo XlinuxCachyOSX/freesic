@@ -15,7 +15,181 @@ const stato = {
   indice: -1,
   libreria: [],
   scaffali: [],
+  utente: "",
+  piaciuti: new Set(),
+  modalita: "login",
 };
+
+/* ---------- tema chiaro / scuro ---------- */
+function temaPreferito() {
+  try {
+    const salvato = localStorage.getItem("freesic.tema");
+    if (salvato === "chiaro" || salvato === "scuro") return salvato;
+  } catch (e) { /* storage non disponibile */ }
+  if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) return "chiaro";
+  return "scuro";
+}
+
+function applicaTema(tema) {
+  document.documentElement.dataset.tema = tema;
+  const bottone = document.getElementById("tema");
+  if (bottone) bottone.textContent = tema === "chiaro" ? "☀" : "☾";
+  try { localStorage.setItem("freesic.tema", tema); } catch (e) { /* storage non disponibile */ }
+}
+
+function cambiaTema() {
+  applicaTema(document.documentElement.dataset.tema === "chiaro" ? "scuro" : "chiaro");
+}
+
+/* ---------- account e "mi piace" ---------- */
+async function caricaSessione() {
+  try {
+    const d = await api("/api/auth/me");
+    stato.utente = d.utente || "";
+  } catch (e) {
+    stato.utente = "";
+  }
+  disegnaAccount();
+  if (stato.utente) await caricaPiaciuti();
+}
+
+function disegnaAccount() {
+  const bottone = document.getElementById("btn-account");
+  const voce = document.getElementById("voce-piaciuta");
+  if (bottone) bottone.textContent = stato.utente ? `${stato.utente} · Esci` : "Accedi";
+  if (voce) {
+    voce.classList.toggle("attivo", stato.vista === "piaciuta");
+    if (!stato.utente) voce.title = "Accedi per vedere i brani con mi piace";
+  }
+  if (!stato.utente) {
+    stato.piaciuti = new Set();
+    aggiornaCuori();
+  }
+}
+
+async function caricaPiaciuti() {
+  try {
+    const d = await api("/api/mipiace");
+    stato.piaciuti = new Set((d.items || []).map((x) => x.videoId));
+  } catch (e) {
+    stato.piaciuti = new Set();
+  }
+  aggiornaCuori();
+}
+
+function aggiornaCuori() {
+  document.querySelectorAll("[data-piace]").forEach((b) => {
+    const attivo = stato.piaciuti.has(b.dataset.piace);
+    b.classList.toggle("attivo", attivo);
+    b.textContent = attivo ? "♥" : "♡";
+    b.title = attivo ? "Togli dai mi piace" : "Mi piace";
+  });
+}
+
+async function alternaMiPiace(videoId, brano) {
+  if (!stato.utente) { apriModale("login"); return; }
+  const attivo = stato.piaciuti.has(videoId);
+  try {
+    if (attivo) {
+      const d = await api(`/api/mipiace/${encodeURIComponent(videoId)}`, { metodo: "DELETE" });
+      stato.piaciuti.delete(videoId);
+      void d;
+    } else {
+      const d = await api("/api/mipiace", {
+        metodo: "POST",
+        corpo: {
+          videoId,
+          title: brano.title || "",
+          artist: brano.artist || "",
+          album: brano.album || "",
+          thumbnail: brano.thumbnail || "",
+          duration: brano.duration || 0,
+        },
+      });
+      (d.items || []).forEach((x) => stato.piaciuti.add(x.videoId));
+    }
+    aggiornaCuori();
+  } catch (e) {
+    document.getElementById("acc-errore").textContent = e.message;
+  }
+}
+
+function apriModale(modalita) {
+  stato.modalita = modalita || "login";
+  const modale = document.getElementById("modale");
+  modale.classList.remove("nascosto");
+  aggiornaSchede();
+  document.getElementById("acc-errore").textContent = "";
+  document.getElementById("acc-utente").focus();
+}
+
+function chiudiModale() {
+  document.getElementById("modale").classList.add("nascosto");
+}
+
+function aggiornaSchede() {
+  const login = stato.modalita === "login";
+  document.getElementById("scheda-accesso").classList.toggle("attivo", login);
+  document.getElementById("scheda-registro").classList.toggle("attivo", !login);
+  document.getElementById("titolo-modale").textContent = login ? "Accedi a FreeSic" : "Crea un account";
+  document.getElementById("form-account").querySelector("button[type=submit]").textContent =
+    login ? "Accedi" : "Registrati";
+  document.getElementById("acc-password").autocomplete = login ? "current-password" : "new-password";
+}
+
+async function inviaAccount(e) {
+  e.preventDefault();
+  const errore = document.getElementById("acc-errore");
+  const nome = document.getElementById("acc-utente").value.trim();
+  const password = document.getElementById("acc-password").value;
+  const percorso = stato.modalita === "login" ? "/api/auth/login" : "/api/auth/register";
+  errore.textContent = "";
+  try {
+    const d = await api(percorso, { metodo: "POST", corpo: { username: nome, password } });
+    stato.utente = d.utente || nome;
+    document.getElementById("acc-password").value = "";
+    chiudiModale();
+    disegnaAccount();
+    await caricaPiaciuti();
+  } catch (err) {
+    errore.textContent = err.message;
+  }
+}
+
+async function esciAccount() {
+  try { await api("/api/auth/logout", { metodo: "POST" }); } catch (e) { /* ignorato */ }
+  stato.utente = "";
+  stato.piaciuti = new Set();
+  disegnaAccount();
+  aggiornaCuori();
+}
+
+/* ---------- playlist "Piaciuta" ---------- */
+async function vistaPiaciuta() {
+  vista.innerHTML = `<p class="vuoto">Caricamento…</p>`;
+  try {
+    const d = await api("/api/playlist/piaciuta");
+    stato.scaffali = [d.items];
+    vista.innerHTML = `
+      <div class="scaffale" data-sec="0">
+      <div class="intestazione">
+        ${img(d.thumbnail, d.title)}
+        <div class="info">
+          <h1>${esc(d.title)}</h1>
+          <p>${esc(d.subtitle || "")}</p>
+          <div class="azioni">
+            ${d.items.length ? `<button class="btn-rosso" id="riproduci-tutto">▶ Riproduci</button>` : ""}
+          </div>
+        </div>
+      </div>
+      ${d.items.length ? tracce(d.items) : `<p class="vuoto">Nessun brano con "mi piace".</p>`}
+      </div>`;
+    const btnPlay = document.getElementById("riproduci-tutto");
+    if (btnPlay) btnPlay.onclick = () => avvia(d.items, 0);
+  } catch (e) {
+    vista.innerHTML = segnale("Playlist non disponibile: " + e.message);
+  }
+}
 
 /* ---------- utilità ---------- */
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => (
@@ -34,13 +208,20 @@ const img = (url, alt) => url
   ? `<img src="/api/image?u=${encodeURIComponent(url)}" alt="${esc(alt || "")}" loading="lazy" onerror="this.src='${esc(url)}'">`
   : `<img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'/>" alt="">`;
 
-async function api(percorso) {
-  const r = await fetch(percorso);
+async function api(percorso, opzioni) {
+  const op = opzioni || {};
+  const init = { method: op.metodo || "GET", credentials: "same-origin" };
+  if (op.corpo !== undefined) {
+    init.headers = { "Content-Type": "application/json" };
+    init.body = JSON.stringify(op.corpo);
+  }
+  const r = await fetch(percorso, init);
   if (!r.ok) {
     let det = `Errore ${r.status}`;
     try { det = (await r.json()).detail || det; } catch (e) { /* risposta non JSON */ }
     throw new Error(det);
   }
+  if (r.status === 204) return {};
   return r.json();
 }
 
@@ -86,7 +267,8 @@ function griglia(items) {
   return `<div class="griglia">${items.map((it) => `
     <div class="card" data-browse="${esc(it.browseId || "")}" data-video="${esc(it.videoId || "")}">
       <div class="miniatura">${img(it.thumbnail, it.title)}
-        ${it.videoId ? `<span class="play">▶</span>` : ""}</div>
+        ${it.videoId ? `<span class="play">▶</span>` : ""}
+        ${it.videoId ? `<button class="btn-piace card-piace" data-piace="${esc(it.videoId)}" title="Mi piace">♡</button>` : ""}</div>
       <h3>${esc(it.title)}</h3>
       <p>${esc(it.subtitle || it.artist || "")}</p>
     </div>`).join("")}</div>`;
@@ -103,7 +285,10 @@ function tracce(items) {
           <div class="meta">${esc(it.artist || "")}</div></div></div></td>
         <td class="meta">${esc(it.album || "")}</td>
         <td class="durata">${esc(it.durationText || tempo(it.duration))}</td>
-        <td class="azioni"><button class="btn-singolo" title="Riproduci">▶</button></td>
+        <td class="azioni">
+          <button class="btn-piace" data-piace="${esc(it.videoId || "")}" title="Mi piace">♡</button>
+          <button class="btn-singolo" title="Riproduci">▶</button>
+        </td>
       </tr>`).join("")}</tbody></table>`;
 }
 
@@ -333,7 +518,20 @@ document.addEventListener("click", (e) => {
     nav.classList.add("attivo");
     stato.vista = nav.dataset.view;
     if (stato.vista === "home") vistaHome();
+    else if (stato.vista === "piaciuta") {
+      if (!stato.utente) { apriModale("login"); return; }
+      vistaPiaciuta();
+    }
     else { document.getElementById("q").focus(); vista.innerHTML = `<p class="vuoto">Scrivi per cercare.</p>`; }
+    return;
+  }
+
+  const cuore = e.target.closest("[data-piace]");
+  if (cuore) {
+    e.stopPropagation();
+    const videoId = cuore.dataset.piace;
+    const brano = elementiDi(cuore).find((x) => x.videoId === videoId) || { videoId };
+    alternaMiPiace(videoId, brano);
     return;
   }
 
@@ -381,9 +579,27 @@ document.addEventListener("click", (e) => {
     return;
   }
 
+  if (e.target.id === "btn-account") {
+    if (stato.utente) esciAccount();
+    else apriModale("login");
+    return;
+  }
+
+  if (e.target.closest && e.target.closest("#modale") === e.target) chiudiModale();
+
   if (e.target.id === "chiudi-coda") codaEl.classList.add("nascosto");
   if (e.target.id === "btn-coda") codaEl.classList.toggle("nascosto");
 });
+
+document.getElementById("tema").addEventListener("click", cambiaTema);
+document.getElementById("chiudi-modale").addEventListener("click", chiudiModale);
+document.getElementById("scheda-accesso").addEventListener("click", () => {
+  stato.modalita = "login"; aggiornaSchede();
+});
+document.getElementById("scheda-registro").addEventListener("click", () => {
+  stato.modalita = "registro"; aggiornaSchede();
+});
+document.getElementById("form-account").addEventListener("submit", inviaAccount);
 
 document.getElementById("form-ricerca").addEventListener("submit", (e) => {
   e.preventDefault();
@@ -432,5 +648,7 @@ document.addEventListener("click", () => {
 }, { once: true });
 
 /* ---------- avvio ---------- */
+applicaTema(temaPreferito());
 caricaLibreria();
 vistaHome();
+caricaSessione();

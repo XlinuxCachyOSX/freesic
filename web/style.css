@@ -9,6 +9,19 @@
   --rosso2: #cc0027;
 }
 
+/* ---------- tema chiaro ---------- */
+:root[data-tema="chiaro"] {
+  --sfondo: #f6f6f8;
+  --sfondo2: #ffffff;
+  --pannello: #ffffff;
+  --bordo: #e0e0e4;
+  --testo: #16161a;
+  --grigio: #6a6a72;
+  --rosso: #e6002e;
+  --rosso2: #c40026;
+  --ombra: 0 6px 24px rgba(0, 0, 0, .12);
+}
+
 * { box-sizing: border-box; }
 
 html, body {
@@ -46,7 +59,11 @@ input { font: inherit; }
   padding: 16px 12px 110px;
   overflow-y: auto;
   overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
 }
+
+.nascosto { display: none !important; }
 
 .brand {
   display: flex;
@@ -362,36 +379,162 @@ input[type=range]::-moz-range-thumb { width: 12px; height: 12px; border: 0; bord
   .player-centro { display: none; }
 }
 
-/* ---------- schermata di avvio (riproduzione automatica) ---------- */
+/* ---------- pulsante di avvio (riproduzione automatica bloccata) ---------- */
 .avvio {
   position: fixed;
-  inset: 0;
-  z-index: 60;
+  right: 20px;
+  bottom: 104px;
+  z-index: 55;
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: rgba(8, 8, 12, .78);
-  backdrop-filter: blur(8px);
-  cursor: pointer;
-}
-.avvio.nascosto { display: none; }
-.avvio-box { text-align: center; user-select: none; }
-.avvio-logo {
-  width: 88px;
-  height: 88px;
-  margin: 0 auto 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 36px;
-  border-radius: 50%;
+  gap: 10px;
+  padding: 10px 16px 10px 12px;
+  border-radius: 999px;
   background: var(--rosso);
   color: #fff;
-  box-shadow: 0 10px 34px rgba(0, 0, 0, .5);
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, .45);
+  cursor: pointer;
+  user-select: none;
   animation: pulsa 1.8s ease-in-out infinite;
 }
-.avvio-testo { font-size: 16px; color: var(--testo); margin: 0; }
-@keyframes pulsa {
-  0%, 100% { transform: scale(1); box-shadow: 0 10px 34px rgba(0, 0, 0, .5); }
-  50% { transform: scale(1.07); box-shadow: 0 10px 46px rgba(255, 0, 51, .55); }
+.avvio.nascosto { display: none; }
+.avvio-logo {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .22);
 }
+.avvio-testo { font-size: 13px; color: #fff; margin: 0; }
+@keyframes pulsa {
+  0%, 100% { transform: scale(1); box-shadow: 0 8px 26px rgba(0, 0, 0, .45); }
+  50% { transform: scale(1.05); box-shadow: 0 8px 30px rgba(255, 0, 51, .6); }
+}
+:root[data-tema="chiaro"] .avvio { box-shadow: 0 8px 26px rgba(0, 0, 0, .25); }
+
+/* ---------- tema chiaro: adattamenti ---------- */
+:root[data-tema="chiaro"] body { background: var(--sfondo); }
+:root[data-tema="chiaro"] .sidebar { background: var(--sfondo2); border-color: var(--bordo); }
+:root[data-tema="chiaro"] .vista, :root[data-tema="chiaro"] .barra { background: var(--sfondo); }
+:root[data-tema="chiaro"] .nav-item:hover { background: #ececf1; }
+:root[data-tema="chiaro"] .nav-item.attivo { background: #e2e2e8; }
+:root[data-tema="chiaro"] .libreria a:hover, :root[data-tema="chiaro"] .libreria a.attivo { background: #ececf1; }
+:root[data-tema="chiaro"] .tracce tr:hover td { background: #eeeef2; }
+:root[data-tema="chiaro"] .card:hover { background: #eeeef2; }
+:root[data-tema="chiaro"] .player { background: var(--pannello); border-color: var(--bordo); }
+:root[data-tema="chiaro"] .modale { background: rgba(20, 20, 26, .45); }
+
+/* ---------- tema, account, mi piace ---------- */
+.btn-tema {
+  margin-left: auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: var(--grigio);
+  font-size: 15px;
+  line-height: 1;
+}
+.btn-tema:hover { background: var(--pannello); color: var(--testo); }
+
+.account { margin-top: auto; padding-top: 12px; }
+.btn-account {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--bordo);
+  color: var(--testo);
+  background: var(--pannello);
+  font-size: 13px;
+  font-weight: 600;
+}
+.btn-account:hover { border-color: var(--rosso); color: var(--rosso); }
+
+.btn-piace {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: var(--grigio);
+  font-size: 16px;
+  line-height: 1;
+}
+.btn-piace:hover { color: var(--rosso); }
+.btn-piace.attivo { color: var(--rosso); }
+.btn-piace:disabled { opacity: .35; cursor: default; }
+
+/* ---------- finestra di accesso ---------- */
+.modale {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, .6);
+  padding: 16px;
+}
+.modale.nascosto { display: none; }
+.modale-box {
+  position: relative;
+  width: min(380px, 100%);
+  padding: 26px 24px 22px;
+  border-radius: 14px;
+  background: var(--pannello);
+  border: 1px solid var(--bordo);
+  box-shadow: var(--ombra, 0 10px 40px rgba(0, 0, 0, .45));
+}
+.modale-box h2 { margin: 0 0 8px; font-size: 19px; }
+.modale-testo { margin: 0 0 16px; color: var(--grigio); font-size: 13px; }
+.chiudi-modale {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  color: var(--grigio);
+  font-size: 15px;
+}
+.modale-schede { display: flex; gap: 8px; margin-bottom: 14px; }
+.scheda {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--bordo);
+  color: var(--grigio);
+  font-size: 13px;
+}
+.scheda.attivo { color: var(--testo); border-color: var(--rosso); font-weight: 600; }
+.modale-form { display: flex; flex-direction: column; gap: 12px; }
+.modale-form label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--grigio); }
+.modale-form input {
+  padding: 9px 11px;
+  border-radius: 8px;
+  border: 1px solid var(--bordo);
+  background: var(--sfondo2);
+  color: var(--testo);
+  font: inherit;
+}
+.modale-form input:focus { outline: 2px solid var(--rosso); border-color: transparent; }
+.modale-errore { color: var(--rosso); font-size: 12px; min-height: 16px; }
+
+/* cuore "mi piace" sulle copertine */
+.card-piace {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, .55);
+  color: #fff;
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity .15s ease;
+}
+.card:hover .card-piace, .card-piace.attivo { opacity: 1; }
+:root[data-tema="chiaro"] .card-piace { background: rgba(255, 255, 255, .85); color: #16161a; }

@@ -10,14 +10,23 @@
 <body>
 <div class="app">
   <aside class="sidebar">
-    <div class="brand"><span class="logo">▶</span><span>FreeSic</span></div>
+    <div class="brand">
+      <span class="logo">▶</span><span>FreeSic</span>
+      <button id="tema" class="btn-tema" title="Cambia tema">☾</button>
+    </div>
     <nav class="menu">
       <button class="nav-item attivo" data-view="home"><span class="ic">⌂</span>Home</button>
       <button class="nav-item" data-view="search"><span class="ic">⌕</span>Ricerca</button>
+      <button id="voce-piaciuta" class="nav-item" data-view="piaciuta">
+        <span class="ic">♥</span>Piaciuta
+      </button>
     </nav>
     <div class="menu-titolo">La tua libreria</div>
     <div id="libreria" class="libreria">
       <p class="vuoto">Le playlist che ascolti vengono salvate qui.</p>
+    </div>
+    <div class="account">
+      <button id="btn-account" class="btn-account">Accedi</button>
     </div>
   </aside>
 
@@ -70,11 +79,34 @@
   </div>
 </footer>
 
-<div id="avvio" class="avvio nascosto">
-  <div class="avvio-box">
-    <div class="avvio-logo">▶</div>
-    <p class="avvio-testo">Clicca per far partire la musica</p>
+<div id="modale" class="modale nascosto">
+  <div class="modale-box">
+    <button id="chiudi-modale" class="chiudi-modale" title="Chiudi">✕</button>
+    <h2 id="titolo-modale">Accedi a FreeSic</h2>
+    <p class="modale-testo">
+      L'account e' facoltativo e resta su questo computer: serve solo per mettere
+      "mi piace" ai brani e ritrovarli nella playlist <b>Piaciuta</b>.
+    </p>
+    <div class="modale-schede">
+      <button id="scheda-accesso" class="scheda attivo">Accedi</button>
+      <button id="scheda-registro" class="scheda">Registrati</button>
+    </div>
+    <form id="form-account" class="modale-form">
+      <label> Nome utente
+        <input id="acc-utente" type="text" autocomplete="username" required>
+      </label>
+      <label> Password
+        <input id="acc-password" type="password" autocomplete="current-password" required>
+      </label>
+      <div id="acc-errore" class="modale-errore"></div>
+      <button type="submit" class="btn-rosso">Accedi</button>
+    </form>
   </div>
+</div>
+
+<div id="avvio" class="avvio nascosto">
+  <div class="avvio-logo">▶</div>
+  <p class="avvio-testo">Fai partire la musica</p>
 </div>
 
 <audio id="audio" preload="none"></audio>

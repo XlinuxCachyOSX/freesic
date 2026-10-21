@@ -4,6 +4,16 @@ Applicazione web per ascoltare musica da YouTube Music **senza pubblicità, senz
 login e senza account**: il backend risolve i brani e serve l'audio direttamente
 al browser, il frontend è una web app in stile YouTube Music.
 
+**Cosa c'è dentro**
+
+- Ricerca, album, playlist e stream audio diretti da YouTube Music, senza
+  pubblicità, senza login e senza account.
+- La musica parte da sola appena apri il sito.
+- Tema chiaro o scuro (predefinito: quello del sistema), salvato nel browser.
+- Account facoltativo, salvato **solo su questo computer**: serve per mettere
+  "mi piace" ai brani e ritrovarli nella playlist **Piaciuta**.
+- Versione Android (APK) che mostra la stessa interfaccia.
+
 ```
 freesic/
 ├── server/            backend Python (FastAPI)
@@ -81,7 +91,7 @@ Variabili d'ambiente supportate:
 
 ## API
 
-| metodo | endpoint | descrizione |
+| metodo | percorso | cosa fa |
 |---|---|---|
 | `GET` | `/api/health` | stato del servizio |
 | `GET` | `/api/search?q=…&params=…` | ricerca; `params` è il filtro opaco (Canzoni, Album, Artisti…) |
@@ -90,8 +100,27 @@ Variabili d'ambiente supportate:
 | `GET` | `/api/track/{video_id}` | metadati del brano (artista, album, durata, copertina) |
 | `GET` | `/api/stream/{video_id}` | stream audio con supporto `Range` (seek) |
 | `GET` | `/api/image?u=…` | proxy delle copertine |
+| `POST` | `/api/auth/register` | crea un account locale (`username`, `password`) |
+| `POST` | `/api/auth/login` | accesso (cookie di sessione) |
+| `POST` | `/api/auth/logout` | uscita |
+| `GET` | `/api/auth/me` | utente corrente |
+| `GET` | `/api/mipiace` | brani con "mi piace" |
+| `POST` | `/api/mipiace` | aggiunge un "mi piace" |
+| `DELETE` | `/api/mipiace/{video_id}` | toglie un "mi piace" |
+| `GET` | `/api/playlist/piaciuta` | playlist "Piaciuta" dell'utente |
 
 Documentazione interattiva: <http://127.0.0.1:8000/api/docs>.
+
+### Verifica dell'interfaccia
+
+C'è uno script che apre il sito in un browser headless e controlla autoplay,
+tema, registrazione, "mi piace" e playlist "Piaciuta":
+
+```bash
+./.venv/bin/pip install playwright
+./.venv/bin/python -m playwright install chromium
+./.venv/bin/python strumenti/verifica_ui.py http://127.0.0.1:8000
+```
 
 ## Come funziona
 

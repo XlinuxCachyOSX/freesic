@@ -3,17 +3,17 @@ import asyncio
 import os
 
 import httpx
-from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.responses import Response, StreamingResponse
+from fastapi import FastAPI, HTTPException, Query, Request, Response
+from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import audio, innertube, parse
+from . import audio, innertube, parse, utenti
 from .cache import TTLCache
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB = os.path.join(BASE, "web")
 
-app = FastAPI(title="FreeSic", version="1.0.0", docs_url="/api/docs", openapi_url="/api/openapi.json")
+app = FastAPI(title="FreeSic", version="1.1.0", docs_url="/api/docs", openapi_url="/api/openapi.json")
 
 _cache_ricerca = TTLCache(ttl=180.0, maxsize=128)
 _cache_browse = TTLCache(ttl=900.0, maxsize=256)
@@ -137,6 +137,95 @@ async def immagine(u: str = Query(...)):
         raise HTTPException(status_code=502, detail="immagine non disponibile")
     return Response(content=r.content, media_type=r.headers.get("content-type", "image/jpeg"),
                     headers={"Cache-Control": "public, max-age=86400"})
+
+
+# --------------------------------------------------------------------------
+# Account opzionale e "mi piace"
+# --------------------------------------------------------------------------
+def _utente(request: Request) -> str:
+    utente = utenti.utente_da_token(request.cookies.get(utenti.COOKIE))
+    if not utente:
+        raise HTTPException(status_code=401, detail="Devi accedere con un account.")
+    return utente
+
+
+def _cookie_sessione(token: str) -> str:
+    return (f"{utenti.COOKIE}={token}; Path=/; Max-Age={utenti.DURATA_SESSIONE}; "
+            "HttpOnly; SameSite=Lax")
+
+
+@app.get("/api/auth/me")
+async def chi_sono(request: Request):
+    utente = utenti.utente_da_token(request.cookies.get(utenti.COOKIE))
+    return {"autenticato": bool(utente), "utente": utente or ""}
+
+
+@app.post("/api/auth/register")
+async def registra(request: Request, response: Response):
+    dati = await _corpo(request)
+    try:
+        nome = utenti.registra(dati.get("username", ""), dati.get("password", ""))
+    except utenti.ErroreUtente as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    token = utenti.token_sessione(nome)
+    response.set_cookie(utenti.COOKIE, token, httponly=True, samesite="lax", max_age=utenti.DURATA_SESSIONE)
+    return {"autenticato": True, "utente": nome}
+
+
+@app.post("/api/auth/login")
+async def accedi(request: Request, response: Response):
+    dati = await _corpo(request)
+    try:
+        nome = utenti.accedi(dati.get("username", ""), dati.get("password", ""))
+    except utenti.ErroreUtente as e:
+        raise HTTPException(status_code=401, detail=str(e))
+    token = utenti.token_sessione(nome)
+    response.set_cookie(utenti.COOKIE, token, httponly=True, samesite="lax", max_age=utenti.DURATA_SESSIONE)
+    return {"autenticato": True, "utente": nome}
+
+
+@app.post("/api/auth/logout")
+async def esci(request: Request, response: Response):
+    utenti.chiudi_sessione(request.cookies.get(utenti.COOKIE))
+    response.delete_cookie(utenti.COOKIE)
+    return {"autenticato": False, "utente": ""}
+
+
+@app.get("/api/mipiace")
+async def lista_mi_piace(request: Request):
+    utente = _utente(request)
+    return {"items": utenti.piaciuti(utente)}
+
+
+@app.post("/api/mipiace")
+async def aggiungi_mi_piace(request: Request):
+    utente = _utente(request)
+    dati = await _corpo(request)
+    try:
+        lista = utenti.aggiungi_mi_piace(utente, dati)
+    except utenti.ErroreUtente as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"items": lista}
+
+
+@app.delete("/api/mipiace/{video_id}")
+async def rimuovi_mi_piace(video_id: str, request: Request):
+    utente = _utente(request)
+    return {"items": utenti.rimuovi_mi_piace(utente, video_id)}
+
+
+@app.get("/api/playlist/piaciuta")
+async def playlist_piaciuta(request: Request):
+    utente = _utente(request)
+    return utenti.playlist_piaciuta(utente)
+
+
+async def _corpo(request: Request) -> dict:
+    try:
+        dati = await request.json()
+    except Exception:
+        return {}
+    return dati if isinstance(dati, dict) else {}
 
 
 app.mount("/", StaticFiles(directory=WEB, html=True), name="web")
