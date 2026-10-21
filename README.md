@@ -16,9 +16,14 @@ nuovo-progetto/
 │   ├── index.html
 │   ├── style.css
 │   └── app.js
+├── android/           app Android (WebView verso il backend)
+│   ├── app/           progetto Gradle
+│   └── build-apk.sh   compila l'APK (scarica JDK/SDK/Gradle da solo)
+├── dist/              APK già compilati
 ├── tests/             test automatici (unittest)
 ├── requirements.txt
 ├── start.sh / start.bat
+├── pubblica.sh        pubblica su GitHub da riga di comando
 └── README.md
 ```
 
@@ -42,9 +47,13 @@ python -m venv .venv
 start.bat
 ```
 
-Poi aprire <http://127.0.0.1:8000>.
+Lo script avvia il server e **apre da solo il browser** su
+<http://127.0.0.1:8000> (su Windows l'apertura avviene dopo 3 secondi).
+Per fermarlo basta `Ctrl+C`.
 
-Per l'uso quotidiano: `start.sh` avvia il server; per fermarlo basta `Ctrl+C`.
+Per aprire il sito da un altro dispositivo della stessa rete (telefono,
+tablet) usa `HOST=0.0.0.0 ./start.sh` e raggiungi
+`http://<ip-del-computer>:8000`.
 
 ## Comandi manuali
 
@@ -88,6 +97,57 @@ Documentazione interattiva: <http://127.0.0.1:8000/api/docs>.
    scaricato su disco.
 4. **Cache** – ricerche (3 min), album/playlist (15 min) e home (5 min) sono
    memorizzati in memoria per ridurre le chiamate e i limiti.
+
+## Versione Android (APK)
+
+L'app Android è un contenitore WebView che mostra la stessa interfaccia: il
+backend Python resta sul computer e l'app si collega a lui.
+
+APK già compilati in `dist/`:
+
+| file | uso |
+|---|---|
+| `MusicaSenzaPubblicita-1.0.0.apk` | release (installabile, non debuggabile) |
+| `MusicaSenzaPubblicita-debug.apk` | versione debug |
+
+Installazione sul telefono: copia l'APK sul dispositivo, aprilo e autorizza
+l'installazione da sorgenti sconosciute.
+
+Configurazione:
+
+1. Sul computer avvia il server in ascolto sulla rete locale:
+   ```bash
+   HOST=0.0.0.0 ./start.sh
+   ```
+2. Scopri l'indirizzo IP del computer (`ip addr` / `ipconfig`).
+3. Nell'app scegli **menu → Indirizzo server** e inserisci
+   `http://<ip-del-computer>:8000/`.
+
+Su un emulatore Android l'indirizzo predefinito `http://10.0.2.2:8000/` punta
+già alla macchina che esegue l'emulatore.
+
+Per ricompilare l'APK (scarica da solo JDK 17, Android SDK e Gradle in
+`~/android-toolchain`, senza installare nulla a livello di sistema):
+
+```bash
+cd android && ./build-apk.sh
+```
+
+## Pubblicare su GitHub
+
+```bash
+./pubblica.sh                 # crea il repository e fa il push
+./pubblica.sh altro-nome     # sceglie un altro nome
+```
+
+Lo script usa GitHub CLI: se non è installato lo scarica in `./.gh`, poi chiede
+il login (via browser) e infine crea il repository e carica il codice.
+In alternativa, senza script:
+
+```bash
+git remote add origin https://github.com/<utente>/<repository>.git
+git push -u origin main
+```
 
 ## Test
 

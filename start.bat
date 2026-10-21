@@ -27,8 +27,11 @@ exit /b 1
 :avvia
 if "%PORT%"=="" set PORT=8000
 if "%HOST%"=="" set HOST=127.0.0.1
+set SITO=http://%HOST%:%PORT%
+if "%HOST%"=="0.0.0.0" set SITO=http://127.0.0.1:%PORT%
 echo.
 echo   Musica senza pubblicita - avvio del server...
-echo   http://%HOST%:%PORT%/
+echo   %SITO%
 echo.
+start "" cmd /c "timeout /t 3 >nul & start "" %SITO%"
 .venv\Scripts\python.exe -m uvicorn server.main:app --host %HOST% --port %PORT%

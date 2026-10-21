@@ -1,0 +1,35 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.musica.player'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.musica.player"
+        minSdk 21
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    // firma con il keystore di debug: l'APK e' installabile direttamente
+    packagingOptions {
+        resources {
+            excludes += ['META-INF/*']
+        }
+    }
+}
