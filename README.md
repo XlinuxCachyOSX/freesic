@@ -14,6 +14,19 @@ al browser, il frontend è una web app in stile YouTube Music.
   "mi piace" ai brani e ritrovarli nella playlist **Piaciuta**.
 - Versione Android (APK) che mostra la stessa interfaccia.
 
+## Scarica
+
+| Versione | Dispositivo | File |
+|---|---|---|
+| 1.0.0 (release) | Android 5.0+ | [FreeSic-1.0.0.apk](https://github.com/XlinuxCachyOSX/freesic/raw/main/FreeSic-1.0.0.apk) |
+| 1.0.0 (debug) | Android 5.0+ | [FreeSic-debug.apk](https://github.com/XlinuxCachyOSX/freesic/raw/main/FreeSic-debug.apk) |
+
+Su computer: Linux/macOS con `./start.sh`, Windows con `start.bat`.
+L'APK è il guscio: per ascoltare serve il server acceso sul computer
+(`./start.sh` con `HOST=0.0.0.0`) e l'indirizzo del PC da inserire nel menu
+dell'app. Tutte le impostazioni (ricerca, tema, "mi piace") sono le stesse
+del sito.
+
 ```
 freesic/
 ├── server/            backend Python (FastAPI)
@@ -39,7 +52,6 @@ freesic/
 ├── tests/             test automatici (unittest)
 ├── requirements.txt
 ├── start.sh / start.bat
-├── pubblica.sh        pubblica su GitHub da riga di comando
 └── README.md
 ```
 
