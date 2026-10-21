@@ -18,8 +18,14 @@ freesic/
 │   └── app.js
 ├── android/           app Android (WebView verso il backend)
 │   ├── app/           progetto Gradle
-│   └── build-apk.sh   compila l'APK (scarica JDK/SDK/Gradle da solo)
-├── dist/              APK già compilati
+│   └── build-apk.sh   compila l'APK (usa JDK/SDK/Gradle in toolchain/)
+├── strumenti/         avvio condiviso da Linux, macOS e Windows
+│   ├── prepara.py     virtualenv, pip, dipendenze, porta libera
+│   ├── avvia.py      entry point di start.sh / start.bat
+│   └── servizio.py    uvicorn + apertura automatica del browser
+├── toolchain/         JDK 17, Android SDK e Gradle (non tracciato da git)
+├── FreeSic-1.0.0.apk  APK release pronto (stessa cartella del progetto)
+├── FreeSic-debug.apk  APK debug
 ├── tests/             test automatici (unittest)
 ├── requirements.txt
 ├── start.sh / start.bat
@@ -43,14 +49,22 @@ cd freesic
 start.bat
 ```
 
-Lo script crea l'ambiente virtuale `.venv`, installa le dipendenze se mancano,
-avvia il server e **apre da solo il browser** su
-<http://127.0.0.1:8000> (su Windows l'apertura avviene dopo 3 secondi).
-Per fermarlo basta `Ctrl+C`.
+Il comando e' lo stesso su tutte le piattaforme: crea l'ambiente virtuale
+`.venv`, installa le dipendenze se mancano, avvia il server e **apre da solo
+il browser** su <http://127.0.0.1:8000>. Per fermarlo basta `Ctrl+C`.
 
-Per aprire il sito da un altro dispositivo della stessa rete (telefono,
-tablet) usa `HOST=0.0.0.0 ./start.sh` e raggiungi
-`http://<ip-del-computer>:8000`.
+Dietro le quinte `start.sh` e `start.bat` chiamano `strumenti/avvia.py`, che
+prepara l'ambiente (`strumenti/prepara.py`) e avvia il server
+(`strumenti/servizio.py`): la logica e' quindi identica su Linux, macOS e
+Windows.
+
+Per raggiungere il player dal telefono o da un altro computer della rete:
+
+```bash
+HOST=0.0.0.0 ./start.sh
+```
+
+Il server stampa l'indirizzo da usare (es. `http://192.168.1.78:8000/`).
 
 ## Comandi manuali
 

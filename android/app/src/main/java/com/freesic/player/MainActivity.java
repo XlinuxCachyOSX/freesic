@@ -29,7 +29,7 @@ import android.widget.TextView;
  */
 public class MainActivity extends Activity {
 
-    private static final String PREFS = "musica";
+    private static final String PREFS = "freesic";
     private static final String CHIAVE_URL = "url";
     private static final String URL_PREDEFINITA = "http://10.0.2.2:8000/";
 
@@ -51,7 +51,7 @@ public class MainActivity extends Activity {
         s.setSupportZoom(false);
         s.setBuiltInZoomControls(false);
         s.setCacheMode(WebSettings.LOAD_DEFAULT);
-        s.setUserAgentString(s.getUserAgentString() + " MusicaApp/1.0");
+        s.setUserAgentString(s.getUserAgentString() + " FreeSic/1.0");
         web.setBackgroundColor(Color.parseColor("#0F0F0F"));
         web.setOverScrollMode(ViewGroup.OVER_SCROLL_NEVER);
         web.setWebViewClient(new WebViewClient() {
@@ -93,7 +93,7 @@ public class MainActivity extends Activity {
         errore.setTextColor(Color.parseColor("#F1F1F1"));
         errore.setTextSize(16);
         errore.setPadding(48, 48, 48, 48);
-        errore.setText("Server non raggiungibile.\n\nAvvia il player sul computer con ./start.sh e poi scegli l'indirizzo dal menu 'Indirizzo server'.\n\n"
+        errore.setText("Server non raggiungibile.\n\nAvvia FreeSic sul computer con ./start.sh (HOST=0.0.0.0) e poi scegli l'indirizzo dal menu 'Indirizzo server'.\n\n"
                 + "Esempio: http://192.168.1.10:8000/");
         FrameLayout root = (FrameLayout) web.getParent();
         if (root != null && root.getChildCount() < 2) {
@@ -115,7 +115,7 @@ public class MainActivity extends Activity {
 
         new AlertDialog.Builder(this)
                 .setTitle("Indirizzo del server")
-                .setMessage("Inserisci l'indirizzo del player che gira sul computer (stessa rete Wi-Fi).")
+                .setMessage("Inserisci l'indirizzo di FreeSic che gira sul computer (stessa rete Wi-Fi).")
                 .setView(contenitore)
                 .setCancelable(false)
                 .setPositiveButton("Apri", (dialog, which) -> {
