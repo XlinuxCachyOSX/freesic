@@ -1,4 +1,4 @@
-package com.musica.player;
+package com.freesic.player;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;

@@ -8,8 +8,8 @@
 set -e
 cd "$(dirname "$0")"
 
-NOME="${1:-musica-senza-pubblicita}"
-DESCRIZIONE="Player musicale senza pubblicita: ricerca, album, playlist e stream audio"
+NOME="${1:-freesic}"
+DESCRIZIONE="FreeSic: player musicale senza pubblicita (ricerca, album, playlist, stream audio)"
 VISIBILITA="${VISIBILITA:-public}"
 
 GH=gh

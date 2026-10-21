@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Musica — player senza pubblicità</title>
+<title>FreeSic — player musicale senza pubblicità</title>
 <link rel="stylesheet" href="/style.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♪</text></svg>">
 </head>
 <body>
 <div class="app">
   <aside class="sidebar">
-    <div class="brand"><span class="logo">▶</span><span>Musica</span></div>
+    <div class="brand"><span class="logo">▶</span><span>FreeSic</span></div>
     <nav class="menu">
       <button class="nav-item attivo" data-view="home"><span class="ic">⌂</span>Home</button>
       <button class="nav-item" data-view="search"><span class="ic">⌕</span>Ricerca</button>
@@ -69,6 +69,13 @@
     <input id="volume" type="range" min="0" max="100" value="100" step="1">
   </div>
 </footer>
+
+<div id="avvio" class="avvio nascosto">
+  <div class="avvio-box">
+    <div class="avvio-logo">▶</div>
+    <p class="avvio-testo">Clicca per far partire la musica</p>
+  </div>
+</div>
 
 <audio id="audio" preload="none"></audio>
 <script src="/app.js"></script>

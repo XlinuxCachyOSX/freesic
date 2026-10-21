@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'com.musica.player'
+    namespace 'com.freesic.player'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.musica.player"
+        applicationId "com.freesic.player"
         minSdk 21
         targetSdk 34
         versionCode 1

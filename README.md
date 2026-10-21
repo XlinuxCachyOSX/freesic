@@ -1,11 +1,11 @@
-# Player musicale senza pubblicità
+# FreeSic — player musicale senza pubblicità
 
 Applicazione web per ascoltare musica da YouTube Music **senza pubblicità, senza
 login e senza account**: il backend risolve i brani e serve l'audio direttamente
 al browser, il frontend è una web app in stile YouTube Music.
 
 ```
-nuovo-progetto/
+freesic/
 ├── server/            backend Python (FastAPI)
 │   ├── innertube.py   client dell'API interna di YouTube Music
 │   ├── parse.py       normalizzazione delle risposte in JSON semplici
@@ -32,14 +32,14 @@ nuovo-progetto/
 Linux/macOS:
 
 ```bash
-cd nuovo-progetto
+cd freesic
 ./start.sh
 ```
 
 Windows (PowerShell o cmd):
 
 ```bat
-cd nuovo-progetto
+cd freesic
 start.bat
 ```
 
@@ -135,7 +135,7 @@ cd android && ./build-apk.sh
 Il comando va eseguito **dentro** la cartella del progetto:
 
 ```bash
-cd "Default Project/nuovo-progetto"
+cd "Default Project/freesic"
 ./pubblica.sh                 # crea il repository e fa il push
 ./pubblica.sh altro-nome     # sceglie un altro nome
 ```

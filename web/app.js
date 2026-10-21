@@ -1,10 +1,11 @@
-/* Player musicale senza pubblicità - frontend vanilla */
+/* FreeSic - player musicale senza pubblicità - frontend vanilla */
 const audio = document.getElementById("audio");
 const vista = document.getElementById("vista");
 const chips = document.getElementById("chips");
 const libreriaEl = document.getElementById("libreria");
 const codaEl = document.getElementById("coda");
 const listaCoda = document.getElementById("lista-coda");
+const avvioEl = document.getElementById("avvio");
 
 const stato = {
   vista: "home",
@@ -127,6 +128,7 @@ async function vistaHome() {
     }
     stato.scaffali = dati.shelves.map((s) => s.items);
     vista.innerHTML = dati.shelves.map((s, i) => sezione(s.title, griglia(s.items), i)).join("");
+    avviaAutomatico();
   } catch (e) {
     vista.innerHTML = segnale("Home non disponibile: " + e.message);
   }
@@ -208,6 +210,30 @@ async function vistaDettaglio(browseId) {
 }
 
 /* ---------- riproduzione ---------- */
+/* La musica parte da sola appena il sito si apre: se il browser blocca
+   l'avvio automatico (serve un gesto dell'utente) compare la schermata
+   "Clicca per far partire la musica". */
+function mostraAvvio() {
+  if (avvioEl) avvioEl.classList.remove("nascosto");
+}
+
+function nascondiAvvio() {
+  if (avvioEl) avvioEl.classList.add("nascosto");
+}
+
+function avviaAutomatico() {
+  const primo = stato.scaffali.flat().find((x) => x && x.videoId);
+  if (!primo) return;
+  avvia([primo], 0);
+}
+
+if (avvioEl) {
+  avvioEl.addEventListener("click", () => {
+    if (!audio.src) return;
+    audio.play().then(nascondiAvvio).catch(() => { /* resta la schermata */ });
+  });
+}
+
 function avvia(brano, indice) {
   const brani = brano.filter((b) => b.videoId);
   if (!brani.length) return;
@@ -222,6 +248,7 @@ function suona(indice) {
   stato.indice = indice;
   audio.src = `/api/stream/${encodeURIComponent(b.videoId)}`;
   audio.play().catch((e) => {
+    if (e && e.name === "NotAllowedError") { mostraAvvio(); return; }
     document.getElementById("artista-brano").textContent = "Errore: " + e.message;
   });
   aggiornaPlayer(b);
@@ -384,10 +411,11 @@ audio.addEventListener("timeupdate", aggiornaBarra);
 audio.addEventListener("loadedmetadata", () => {
   if (isFinite(audio.duration)) document.getElementById("tempo-totale").textContent = tempo(audio.duration);
 });
-audio.addEventListener("play", () => { document.getElementById("play").textContent = "⏸"; });
+audio.addEventListener("play", () => { document.getElementById("play").textContent = "⏸"; nascondiAvvio(); });
 audio.addEventListener("pause", () => { document.getElementById("play").textContent = "▶"; });
 audio.addEventListener("ended", successivo);
 audio.addEventListener("error", () => {
+  nascondiAvvio();
   if (audio.src) document.getElementById("artista-brano").textContent = "Stream non disponibile";
 });
 
@@ -397,6 +425,11 @@ document.addEventListener("keydown", (e) => {
   if (e.code === "ArrowRight" && audio.duration) audio.currentTime = Math.min(audio.duration, audio.currentTime + 5);
   if (e.code === "ArrowLeft" && audio.duration) audio.currentTime = Math.max(0, audio.currentTime - 5);
 });
+
+/* Un qualsiasi clic sblocca l'avvio automatico bloccato dal browser. */
+document.addEventListener("click", () => {
+  if (audio.src && audio.paused) audio.play().then(nascondiAvvio).catch(() => { /* ignorato */ });
+}, { once: true });
 
 /* ---------- avvio ---------- */
 caricaLibreria();

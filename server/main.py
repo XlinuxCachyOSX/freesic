@@ -13,7 +13,7 @@ from .cache import TTLCache
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB = os.path.join(BASE, "web")
 
-app = FastAPI(title="Player musicale", version="1.0.0", docs_url="/api/docs", openapi_url="/api/openapi.json")
+app = FastAPI(title="FreeSic", version="1.0.0", docs_url="/api/docs", openapi_url="/api/openapi.json")
 
 _cache_ricerca = TTLCache(ttl=180.0, maxsize=128)
 _cache_browse = TTLCache(ttl=900.0, maxsize=256)

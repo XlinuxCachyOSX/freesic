@@ -1,7 +1,7 @@
 #!/bin/sh
-# Compila l'APK Android del player musicale.
+# Compila l'APK Android di FreeSic.
 #
-#   ./build-apk.sh              -> dist/MusicaSenzaPubblicita-1.0.0.apk
+#   ./build-apk.sh              -> dist/FreeSic-1.0.0.apk
 #
 # Scarica e usa JDK 17, Android SDK e Gradle in ~/android-toolchain
 # (nessuna installazione di sistema richiesta).
@@ -53,8 +53,8 @@ echo "== build =="
 
 mkdir -p "$PROGETTO/../dist"
 VERSIONE=$(sed -nE 's/.*versionName "([^"]+)".*/\1/p' app/build.gradle | head -1)
-cp app/build/outputs/apk/release/app-release.apk "$PROGETTO/../dist/MusicaSenzaPubblicita-$VERSIONE.apk"
-cp app/build/outputs/apk/debug/app-debug.apk "$PROGETTO/../dist/MusicaSenzaPubblicita-debug.apk"
+cp app/build/outputs/apk/release/app-release.apk "$PROGETTO/../dist/FreeSic-$VERSIONE.apk"
+cp app/build/outputs/apk/debug/app-debug.apk "$PROGETTO/../dist/FreeSic-debug.apk"
 
 echo ""
 echo "APK pronto:"
