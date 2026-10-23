@@ -292,7 +292,7 @@ function tracce(items) {
         <td><div class="titolo-cella">${img(it.thumbnail, it.title)}
           <div><div class="titolo-traccia">${esc(it.title)}</div>
           <div class="meta">${esc(it.artist || "")}</div></div></div></td>
-        <td class="meta">${esc(it.album || "")}</td>
+        <td class="meta album">${esc(it.album || "")}</td>
         <td class="durata">${esc(it.durationText || tempo(it.duration))}</td>
         <td class="azioni">
           <button class="btn-piace" data-piace="${esc(it.videoId || "")}" title="Mi piace">♡</button>
@@ -650,6 +650,19 @@ document.addEventListener("click", (e) => {
 
   if (e.target.id === "chiudi-coda") codaEl.classList.add("nascosto");
   if (e.target.id === "btn-coda") codaEl.classList.toggle("nascosto");
+});
+
+function apriMenu() { document.body.classList.add("drawer-aperto"); }
+function chiudiMenu() { document.body.classList.remove("drawer-aperto"); }
+
+document.getElementById("burger").addEventListener("click", (e) => {
+  e.stopPropagation();
+  if (document.body.classList.contains("drawer-aperto")) chiudiMenu();
+  else apriMenu();
+});
+document.getElementById("velo").addEventListener("click", chiudiMenu);
+document.addEventListener("click", (e) => {
+  if (e.target.closest(".nav-item, .libreria a")) setTimeout(chiudiMenu, 0);
 });
 
 document.getElementById("tema").addEventListener("click", cambiaTema);
