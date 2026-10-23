@@ -2,8 +2,12 @@ package com.freesic.player;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -14,9 +18,13 @@ import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import org.json.JSONObject;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 import fi.iki.elonen.NanoHTTPD;
 
@@ -34,7 +42,18 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        try {
+            android.content.Intent svc = new android.content.Intent(this, MusicaService.class);
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                startForegroundService(svc);
+            } else {
+                startService(svc);
+            }
+        } catch (Throwable ignored) {}
+
         Api.init(new DownloaderImpl());
+
+        controllaAggiornamenti(false);
 
         final SharedPreferences prefs = getSharedPreferences("freesic", MODE_PRIVATE);
         server = new Server(new Server.Asset() {
@@ -118,6 +137,10 @@ public class MainActivity extends Activity {
             web.reload();
             return true;
         }
+        if (item.getItemId() == R.id.aggiorna) {
+            controllaAggiornamenti(true);
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -138,5 +161,94 @@ public class MainActivity extends Activity {
         }
         if (server != null) server.stop();
         super.onDestroy();
+    }
+
+    private void controllaAggiornamenti(final boolean manuale) {
+        final SharedPreferences prefs = getSharedPreferences("freesic", MODE_PRIVATE);
+        if (!manuale) {
+            long ultimo = prefs.getLong("ultimoControllo", 0);
+            if (System.currentTimeMillis() - ultimo < 12L * 60 * 60 * 1000) return;
+        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    URL u = new URL("https://raw.githubusercontent.com/XlinuxCachyOSX/freesic/main/update.json");
+                    HttpURLConnection c = (HttpURLConnection) u.openConnection();
+                    c.setConnectTimeout(6000);
+                    c.setReadTimeout(6000);
+                    c.setRequestProperty("User-Agent", "FreeSic");
+                    if (c.getResponseCode() != 200) return;
+                    InputStream in = c.getInputStream();
+                    ByteArrayOutputStream fuori = new ByteArrayOutputStream();
+                    byte[] buf = new byte[4096];
+                    int letti;
+                    while ((letti = in.read(buf)) != -1) fuori.write(buf, 0, letti);
+                    in.close();
+                    prefs.edit().putLong("ultimoControllo", System.currentTimeMillis()).apply();
+                    JSONObject j = new JSONObject(new String(fuori.toByteArray(), "UTF-8"));
+                    final int nuova = j.optInt("versionCode", 0);
+                    PackageInfo pi = getPackageManager().getPackageInfo(getPackageName(), 0);
+                    if (nuova <= pi.versionCode) {
+                        if (manuale) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    new AlertDialog.Builder(MainActivity.this)
+                                            .setTitle("FreeSic aggiornato")
+                                            .setMessage("Hai già l'ultima versione (" + versione() + ").")
+                                            .setPositiveButton("OK", null)
+                                            .show();
+                                }
+                            });
+                        }
+                        return;
+                    }
+                    final String link = j.optString("url");
+                    final String note = j.optString("note", "");
+                    final String nome = j.optString("versionName", "");
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            new AlertDialog.Builder(MainActivity.this)
+                                    .setTitle("Aggiornamento disponibile: " + nome)
+                                    .setMessage(note + "\n\nVuoi aggiornare ora?")
+                                    .setPositiveButton("Aggiorna", new android.content.DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(android.content.DialogInterface d, int w) {
+                                            try {
+                                                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(link)));
+                                            } catch (Exception ignored) {
+                                            }
+                                        }
+                                    })
+                                    .setNegativeButton("Resta senza aggiornare", null)
+                                    .show();
+                        }
+                    });
+                } catch (Exception ignored) {
+                    if (manuale) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                new AlertDialog.Builder(MainActivity.this)
+                                        .setTitle("Controllo non riuscito")
+                                        .setMessage("Nessuna connessione o server non raggiungibile.")
+                                        .setPositiveButton("OK", null)
+                                        .show();
+                            }
+                        });
+                    }
+                }
+            }
+        }).start();
+    }
+
+    private String versione() {
+        try {
+            return getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+        } catch (Exception e) {
+            return "";
+        }
     }
 }

@@ -4,4 +4,8 @@
         android:id="@+id/ricarica"
         android:title="Ricarica"
         android:showAsAction="never" />
+    <item
+        android:id="@+id/aggiorna"
+        android:title="Controlla aggiornamenti"
+        android:showAsAction="never" />
 </menu>

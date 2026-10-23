@@ -1,4 +1,6 @@
 /* FreeSic - player musicale senza pubblicità - frontend vanilla */
+var lingua = localStorage.getItem("freesic.lingua") || "it";
+function tt(k){ var T={it:{home:"Home",cerca:"Ricerca",piaciuta:"Piaciuta",libreria:"La tua libreria",recenti:"Ascoltati di recente",ricerche:"Ricerche recenti",accedi:"Accedi",esci:"Esci",cerca_ph:"Cerca canzoni, album, artisti, playlist",coda:"Coda di riproduzione",avvio:"Fai partire la musica"},en:{home:"Home",cerca:"Search",piaciuta:"Liked",libreria:"Your library",recenti:"Recently played",ricerche:"Recent searches",accedi:"Sign in",esci:"Sign out",cerca_ph:"Search songs, albums, artists, playlists",coda:"Queue",avvio:"Start music"}}; return (T[lingua]&&T[lingua][k])||(T.it[k]||k); }
 const audio = document.getElementById("audio");
 const vista = document.getElementById("vista");
 const chips = document.getElementById("chips");
@@ -57,7 +59,7 @@ async function caricaSessione() {
 function disegnaAccount() {
   const bottone = document.getElementById("btn-account");
   const voce = document.getElementById("voce-piaciuta");
-  if (bottone) bottone.textContent = stato.utente ? `${stato.utente} · Esci` : "Accedi";
+  if (bottone) bottone.textContent = stato.utente ? (stato.utente + " · " + tt("esci")) : tt("accedi");
   if (voce) {
     voce.classList.toggle("attivo", stato.vista === "piaciuta");
     if (!stato.utente) voce.title = "Accedi per vedere i brani con mi piace";
@@ -322,7 +324,6 @@ async function vistaHome() {
     }
     stato.scaffali = dati.shelves.map((s) => s.items);
     vista.innerHTML = dati.shelves.map((s, i) => sezione(s.title, griglia(s.items), i)).join("");
-    avviaAutomatico();
   } catch (e) {
     vista.innerHTML = segnale("Home non disponibile: " + e.message);
   }
@@ -664,6 +665,8 @@ document.getElementById("velo").addEventListener("click", chiudiMenu);
 document.addEventListener("click", (e) => {
   if (e.target.closest(".nav-item, .libreria a")) setTimeout(chiudiMenu, 0);
 });
+
+var lb=document.getElementById("lingua"); if(lb){ lb.textContent=(localStorage.getItem("freesic.lingua")||"it")==="it"?"EN":"IT"; lb.onclick=function(){var l=localStorage.getItem("freesic.lingua")||"it"; localStorage.setItem("freesic.lingua",l==="it"?"en":"it"); location.reload();}; }
 
 document.getElementById("tema").addEventListener("click", cambiaTema);
 document.getElementById("chiudi-modale").addEventListener("click", chiudiModale);
