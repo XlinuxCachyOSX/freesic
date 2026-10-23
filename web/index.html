@@ -25,6 +25,10 @@
     <div id="libreria" class="libreria">
       <p class="vuoto">Le playlist che ascolti vengono salvate qui.</p>
     </div>
+    <div class="menu-titolo">Ascoltati di recente</div>
+    <div id="cronologia" class="libreria"></div>
+    <div class="menu-titolo">Ricerche recenti</div>
+    <div id="ricerche-recenti" class="liste-veloci"></div>
     <div class="account">
       <button id="btn-account" class="btn-account">Accedi</button>
     </div>
@@ -39,7 +43,7 @@
       </form>
       <div id="chips" class="chips"></div>
     </header>
-    <section id="vista" class="vista"><p class="vuoto">Caricamento…</p></section>
+    <section id="vista" class="vista" data-swipe><p class="vuoto">Caricamento…</p></section>
   </main>
 
   <aside id="coda" class="coda nascosto">
@@ -64,9 +68,11 @@
 
   <div class="player-centro">
     <div class="controlli">
+      <button id="mescola" title="Mescola coda">⇄</button>
       <button id="prec" title="Precedente">⏮</button>
       <button id="play" class="play" title="Riproduci">▶</button>
       <button id="succ" title="Successivo">⏭</button>
+      <button id="btn-timer" title="Timer spegnimento">⏱</button>
     </div>
     <div class="barra-avanzamento">
       <span id="tempo-attuale" class="tempo">0:00</span>

@@ -706,3 +706,72 @@ input[type=range]::-moz-range-thumb { width: 12px; height: 12px; border: 0; bord
 }
 .card:hover .card-piace, .card-piace.attivo { opacity: 1; }
 :root[data-tema="chiaro"] .card-piace { background: rgba(255, 255, 255, .85); color: #16161a; }
+
+
+/* ---------- nuove funzionalità ---------- */
+.bottom-nav {
+  display: none;
+}
+@media (max-width: 760px) {
+  .bottom-nav {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    position: fixed;
+    left: 0; right: 0; bottom: 106px;
+    background: rgba(24,24,24,.98);
+    border-top: 1px solid var(--bordo);
+    z-index: 45;
+    padding: 4px 0 calc(4px + env(safe-area-inset-bottom, 0px));
+  }
+  .bottom-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    color: var(--grigio);
+    font-size: 10px;
+  }
+  .bottom-item .bico { font-size: 18px; }
+  .bottom-item.attivo { color: var(--testo); }
+  .player { bottom: 54px; }
+  .vista { padding-bottom: 170px; }
+  .avvio { bottom: 170px; }
+  .coda { bottom: 160px; }
+}
+
+.controlli button#mescola, .controlli button#btn-timer {
+  font-size: 18px;
+  opacity: .7;
+}
+.controlli button#mescola.attivo, .controlli button#btn-timer.attivo {
+  color: var(--rosso);
+  opacity: 1;
+}
+
+.liste-veloci { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 8px 0; }
+.ricerca-rapida {
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #242424;
+  color: var(--grigio);
+  font-size: 12px;
+}
+.ricerca-rapida:hover { color: var(--testo); background: #333; }
+
+#cronologia a, .cronologia {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 8px;
+  color: var(--grigio);
+  cursor: pointer;
+}
+#cronologia a:hover, .cronologia:hover { background: #272727; color: var(--testo); }
+#cronologia img, .cronologia img { width: 34px; height: 34px; border-radius: 6px; object-fit: cover; }
+#cronologia .testo, .cronologia .testo { min-width: 0; }
+#cronologia .t, .cronologia .t { font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#cronologia .a, .cronologia .a { font-size: 10px; color: var(--grigio); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.timer-opzioni { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+#timer-stato { margin-top: 10px; }

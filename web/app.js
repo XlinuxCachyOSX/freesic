@@ -718,14 +718,52 @@ document.addEventListener("keydown", (e) => {
 });
 
 /* Un qualsiasi clic sblocca l'avvio automatico bloccato dal browser. */
+
+const modaleTimer = document.getElementById("modale-timer");
+const btnTimer = document.getElementById("btn-timer");
+if (btnTimer) btnTimer.addEventListener("click", () => { if (modaleTimer) modaleTimer.classList.remove("nascosto"); aggiornaStatoTimer(); });
+const chiudiTimer = document.getElementById("chiudi-timer");
+if (chiudiTimer) chiudiTimer.addEventListener("click", () => { if (modaleTimer) modaleTimer.classList.add("nascosto"); });
+document.querySelectorAll("#modale-timer .chip[data-minuti]").forEach(b => {
+  b.addEventListener("click", () => {
+    const m = Number(b.dataset.minuti);
+    impostaTimer(m * 60 * 1000);
+    if (modaleTimer) modaleTimer.classList.add("nascosto");
+  });
+});
+const disattiva = document.getElementById("timer-disattiva");
+if (disattiva) disattiva.addEventListener("click", () => { if (stato.timer) clearTimeout(stato.timer); stato.timer = null; stato.timerFine = 0; aggiornaStatoTimer(); });
+function impostaTimer(ms) {
+  if (stato.timer) clearTimeout(stato.timer);
+  stato.timerFine = Date.now() + ms;
+  stato.timer = setTimeout(() => { audio.pause(); stato.timer = null; stato.timerFine = 0; aggiornaStatoTimer(); }, ms);
+  aggiornaStatoTimer();
+}
+function aggiornaStatoTimer() {
+  const el = document.getElementById("timer-stato");
+  const btn = document.getElementById("btn-timer");
+  if (!el) return;
+  if (!stato.timerFine) { el.textContent = "Nessun timer attivo"; if (btn) btn.classList.remove("attivo"); return; }
+  const r = Math.max(0, Math.round((stato.timerFine - Date.now()) / 60000));
+  el.textContent = "Spegnimento tra ~" + r + " min";
+  if (btn) btn.classList.add("attivo");
+  setTimeout(aggiornaStatoTimer, 15000);
+}
+
+
 document.addEventListener("click", () => {
   if (audio.src && audio.paused) audio.play().then(nascondiAvvio).catch(() => { /* ignorato */ });
 }, { once: true });
 
 /* ---------- avvio ---------- */
 applicaTema(temaPreferito());
-stato.loop = loopSalvato();
+stato.loop = Number(localStorage.getItem("freesic.loop")) || 0;
 disegnaLoop();
 caricaLibreria();
+if (typeof disegnaCronologia === "function") disegnaCronologia();
+if (typeof disegnaRicerche === "function") disegnaRicerche();
+var vv = document.getElementById("volume");
+if (vv) { vv.value = String(stato.volume); try { audio.volume = stato.volume / 100; } catch(e){} }
 vistaHome();
 caricaSessione();
+if (typeof aggiornaStatoTimer === "function") aggiornaStatoTimer();
