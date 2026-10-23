@@ -7,3 +7,4 @@ toolchain/
 .freesic.pid
 dati/
 .cloudflared/
+android/app/src/main/assets/

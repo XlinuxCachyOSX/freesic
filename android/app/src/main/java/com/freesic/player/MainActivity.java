@@ -2,66 +2,76 @@ package com.freesic.player;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.text.InputType;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
-import android.webkit.WebResourceError;
-import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
-import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+import fi.iki.elonen.NanoHTTPD;
+
 /**
- * Contenitore WebView per il player musicale.
- *
- * L'app non contiene il motore di ricerca: usa il backend Python che gira
- * sul computer (o su un altro dispositivo della stessa rete). L'indirizzo
- * del server e' salvato nelle preferenze e puo' essere cambiato dal menu.
+ * FreeSic autonoma: l'app contiene tutto (interfaccia + motore di ricerca e
+ * riproduzione). Non serve nessun server sul computer.
  */
 public class MainActivity extends Activity {
 
-    private static final String PREFS = "freesic";
-    private static final String CHIAVE_URL = "url";
-    private static final String URL_PREDEFINITA = "http://10.0.2.2:8000/";
-
     private WebView web;
-    private SharedPreferences prefs;
+    private Server server;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+
+        Api.init(new DownloaderImpl());
+
+        final SharedPreferences prefs = getSharedPreferences("freesic", MODE_PRIVATE);
+        server = new Server(new Server.Asset() {
+            @Override
+            public byte[] leggi(String nome) throws IOException {
+                try (InputStream in = getAssets().open(nome)) {
+                    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+                    final byte[] buffer = new byte[8192];
+                    int letti;
+                    while ((letti = in.read(buffer)) != -1) out.write(buffer, 0, letti);
+                    return out.toByteArray();
+                }
+            }
+        }, new Server.Archivio() {
+            @Override
+            public String leggi() {
+                return prefs.getString("piaciuta", "[]");
+            }
+
+            @Override
+            public void scrivi(String testo) {
+                prefs.edit().putString("piaciuta", testo).apply();
+            }
+        });
 
         web = new WebView(this);
         WebSettings s = web.getSettings();
         s.setJavaScriptEnabled(true);
-        s.setDomStorageEnabled(true);           // la libreria usa localStorage
+        s.setDomStorageEnabled(true);
         s.setMediaPlaybackRequiresUserGesture(false);
         s.setAllowContentAccess(false);
         s.setSupportZoom(false);
         s.setBuiltInZoomControls(false);
         s.setCacheMode(WebSettings.LOAD_DEFAULT);
-        s.setUserAgentString(s.getUserAgentString() + " FreeSic/1.0");
+        s.setUserAgentString(s.getUserAgentString() + " FreeSic/1.2");
         web.setBackgroundColor(Color.parseColor("#0F0F0F"));
         web.setOverScrollMode(ViewGroup.OVER_SCROLL_NEVER);
-        web.setWebViewClient(new WebViewClient() {
-            @Override
-            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-                if (request == null || request.isForMainFrame()) {
-                    mostraErrore();
-                }
-            }
-        });
 
         FrameLayout root = new FrameLayout(this);
         root.setBackgroundColor(Color.parseColor("#0F0F0F"));
@@ -69,61 +79,31 @@ public class MainActivity extends Activity {
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         setContentView(root);
 
-        String salvato = prefs.getString(CHIAVE_URL, null);
-        if (salvato == null) {
-            chiediIndirizzo();
-        } else {
-            carica(salvato);
-        }
-    }
-
-    private void carica(String indirizzo) {
-        String url = indirizzo.trim();
-        if (!url.startsWith("http://") && !url.startsWith("https://")) {
-            url = "http://" + url;
-        }
-        if (!url.endsWith("/")) {
-            url = url + "/";
-        }
-        web.loadUrl(url);
-    }
-
-    private void mostraErrore() {
-        TextView errore = new TextView(this);
-        errore.setTextColor(Color.parseColor("#F1F1F1"));
-        errore.setTextSize(16);
-        errore.setPadding(48, 48, 48, 48);
-        errore.setText("Server non raggiungibile.\n\nAvvia FreeSic sul computer con ./start.sh e poi scegli l'indirizzo dal menu 'Indirizzo server' (all'avvio compare la riga 'Dal telefono').\n\n"
-                + "Esempio: http://192.168.1.10:8000/");
-        FrameLayout root = (FrameLayout) web.getParent();
-        if (root != null && root.getChildCount() < 2) {
+        try {
+            server.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
+            int porta = server.getListeningPort();
+            int tentativi = 0;
+            while (porta <= 0 && tentativi < 150) {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException ignored) {
+                }
+                porta = server.getListeningPort();
+                tentativi++;
+            }
+            if (porta <= 0) {
+                porta = 0;
+            }
+            web.loadUrl("http://127.0.0.1:" + porta + "/");
+        } catch (IOException e) {
+            TextView errore = new TextView(this);
+            errore.setTextColor(Color.parseColor("#F1F1F1"));
+            errore.setTextSize(16);
+            errore.setPadding(48, 48, 48, 48);
+            errore.setText("Non riesco ad avviare il motore musicale interno.\n\n" + e.getMessage());
             root.addView(errore, new FrameLayout.LayoutParams(
                     FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         }
-    }
-
-    private void chiediIndirizzo() {
-        final EditText campo = new EditText(this);
-        campo.setInputType(InputType.TYPE_TEXT_VARIATION_URI);
-        campo.setText(URL_PREDEFINITA);
-        campo.setSingleLine(true);
-        int margine = (int) (24 * getResources().getDisplayMetrics().density);
-        FrameLayout contenitore = new FrameLayout(this);
-        contenitore.setPadding(margine, margine / 2, margine, 0);
-        contenitore.addView(campo, new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT));
-
-        new AlertDialog.Builder(this)
-                .setTitle("Indirizzo del server")
-                .setMessage("Inserisci l'indirizzo di FreeSic che gira sul computer (stessa rete Wi-Fi).")
-                .setView(contenitore)
-                .setCancelable(false)
-                .setPositiveButton("Apri", (dialog, which) -> {
-                    String valore = campo.getText().toString();
-                    prefs.edit().putString(CHIAVE_URL, valore).apply();
-                    carica(valore);
-                })
-                .show();
     }
 
     @Override
@@ -134,12 +114,7 @@ public class MainActivity extends Activity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.indirizzo) {
-            chiediIndirizzo();
-            return true;
-        }
-        if (id == R.id.ricarica) {
+        if (item.getItemId() == R.id.ricarica) {
             web.reload();
             return true;
         }
@@ -156,29 +131,12 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        if (web != null) {
-            web.onPause();
-            web.pauseTimers();
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (web != null) {
-            web.resumeTimers();
-            web.onResume();
-        }
-    }
-
-    @Override
     protected void onDestroy() {
         if (web != null) {
             web.loadUrl("about:blank");
             web.destroy();
         }
+        if (server != null) server.stop();
         super.onDestroy();
     }
 }

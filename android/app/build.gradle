@@ -10,8 +10,8 @@ android {
         applicationId "com.freesic.player"
         minSdk 21
         targetSdk 34
-        versionCode 1
-        versionName "1.0.0"
+        versionCode 3
+        versionName "1.2.0"
     }
 
     buildTypes {
@@ -24,12 +24,25 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
+        coreLibraryDesugaringEnabled true
     }
 
-    // firma con il keystore di debug: l'APK e' installabile direttamente
     packagingOptions {
         resources {
-            excludes += ['META-INF/*']
+            excludes += ['META-INF/*', 'META-INF/**']
         }
     }
+}
+
+// l'interfaccia web e' la stessa del computer: viene copiata negli asset
+tasks.register('copiaWeb', Copy) {
+    from "${rootDir}/../web"
+    into "${projectDir}/src/main/assets"
+}
+preBuild.dependsOn copiaWeb
+
+dependencies {
+    implementation 'com.github.TeamNewPipe:NewPipeExtractor:v0.26.5'
+    implementation 'org.nanohttpd:nanohttpd:2.3.1'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 }
