@@ -1,7 +1,7 @@
 #!/bin/sh
 # Compila l'APK Android di FreeSic.
 #
-#   ./build-apk.sh              -> FreeSic-1.0.0.apk (nella cartella del progetto)
+#   ./build-apk.sh              -> FreeSic.apk (nella cartella del progetto)
 #
 # Scarica e usa JDK 17, Android SDK e Gradle nella cartella "toolchain" del
 # progetto (nessuna installazione di sistema richiesta).

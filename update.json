@@ -1,6 +1,6 @@
 {
-  "versionCode": 5,
-  "versionName": "1.3.0",
-  "url": "https://github.com/XlinuxCachyOSX/freesic/releases/download/v1.0.0/FreeSic-1.0.0.apk",
-  "note": "App autonoma (nessun server/IP), UI mobile rifatta (menu a scomparsa, barra in basso, player compatto), shuffle, cronologia ascolti, ricerche recenti, timer spegnimento, swipe brano, lingua IT/EN, niente autoplay all'avvio, notifica di riproduzione, controllo aggiornamenti con popup."
+  "versionCode": 6,
+  "versionName": "1.3.1",
+  "url": "https://github.com/XlinuxCachyOSX/freesic/releases/download/v1.0.0/FreeSic.apk",
+  "note": "Nome file senza versione (FreeSic.apk / FreeSic-debug.apk). Controllo aggiornamenti con popup, notifica di riproduzione, niente autoplay, lingua IT/EN, UI mobile rifatta, shuffle, cronologia, ricerche recenti, timer."
 }

@@ -13,7 +13,7 @@ from pathlib import Path
 
 BASE = Path(__file__).resolve().parent.parent
 DEST = BASE / "dist"
-VERSIONE = "1.0.0"
+VERSIONE = "1.3.1"
 
 CONTENUTI = [
     "server",
@@ -47,7 +47,7 @@ def raccogli(piattaforma: str) -> list:
 
 
 def crea_zip(piattaforma: str) -> Path:
-    prefisso = f"FreeSic-{VERSIONE}-{piattaforma}"
+    prefisso = f"FreeSic-{piattaforma}"
     destinazione = DEST / f"{prefisso}.zip"
     DEST.mkdir(exist_ok=True)
     with zipfile.ZipFile(destinazione, "w", zipfile.ZIP_DEFLATED) as z:

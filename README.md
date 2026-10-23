@@ -22,11 +22,11 @@ al browser, il frontend è una web app in stile YouTube Music.
 
 | Versione | Sistema | File |
 |---|---|---|
-| 1.0.0 (release) | Linux (x64) | [FreeSic-1.0.0-linux.zip](https://github.com/XlinuxCachyOSX/freesic/releases/download/v1.0.0/FreeSic-1.0.0-linux.zip) |
-| 1.0.0 (release) | Windows (x64) | [FreeSic-1.0.0-windows.zip](https://github.com/XlinuxCachyOSX/freesic/releases/download/v1.0.0/FreeSic-1.0.0-windows.zip) |
-| 1.0.0 (release) | macOS (Intel/Apple silicon) | [FreeSic-1.0.0-macos.zip](https://github.com/XlinuxCachyOSX/freesic/releases/download/v1.0.0/FreeSic-1.0.0-macos.zip) |
-| 1.0.0 (release) | Android 5.0+ | [FreeSic-1.0.0.apk](https://github.com/XlinuxCachyOSX/freesic/releases/download/v1.0.0/FreeSic-1.0.0.apk) |
-| 1.0.0 (debug) | Android 5.0+ | [FreeSic-debug.apk](https://github.com/XlinuxCachyOSX/freesic/releases/download/v1.0.0/FreeSic-debug.apk) |
+| 1.0.0 (release) | Linux (x64) | [FreeSic-linux.zip](https://github.com/XlinuxCachyOSX/freesic/releases/download/v1.0.0/FreeSic-linux.zip) |
+| 1.0.0 (release) | Windows (x64) | [FreeSic-windows.zip](https://github.com/XlinuxCachyOSX/freesic/releases/download/v1.0.0/FreeSic-windows.zip) |
+| 1.0.0 (release) | macOS (Intel/Apple silicon) | [FreeSic-macos.zip](https://github.com/XlinuxCachyOSX/freesic/releases/download/v1.0.0/FreeSic-macos.zip) |
+| 1.3.1 (release) | Android 5.0+ | [FreeSic.apk](https://github.com/XlinuxCachyOSX/freesic/releases/download/v1.0.0/FreeSic.apk) |
+| 1.3.1 (debug) | Android 5.0+ | [FreeSic-debug.apk](https://github.com/XlinuxCachyOSX/freesic/releases/download/v1.0.0/FreeSic-debug.apk) |
 
 I file zip contengono il progetto pronto: si decomprime e si avvia.
 (Per rigenerarli: `python strumenti/pacchetti.py`.)
@@ -61,7 +61,7 @@ freesic/
 │   ├── avvia.py      entry point di start.sh / start.bat
 │   └── servizio.py    uvicorn + apertura automatica del browser
 ├── toolchain/         JDK 17, Android SDK e Gradle (non tracciato da git)
-├── FreeSic-1.0.0.apk  APK release pronto (stessa cartella del progetto)
+├── FreeSic.apk        APK release pronto (stessa cartella del progetto)
 ├── FreeSic-debug.apk  APK debug
 ├── tests/             test automatici (unittest)
 ├── requirements.txt
@@ -200,7 +200,7 @@ APK già compilati, nella stessa cartella del progetto:
 
 | file | uso |
 |---|---|
-| `FreeSic-1.0.0.apk` | release (installabile, non debuggabile) |
+| `FreeSic.apk` | release (installabile, non debuggabile) |
 | `FreeSic-debug.apk` | versione debug |
 
 Installazione sul telefono: copia l'APK sul dispositivo, aprilo e autorizza
@@ -229,7 +229,7 @@ cd android && ./build-apk.sh
 ```
 
 L'APK risultante viene copiato nella cartella del progetto
-(`FreeSic-1.0.0.apk`).
+(`FreeSic.apk`).
 
 ## Test
 
