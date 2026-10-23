@@ -1,4 +1,5 @@
 @echo off
+if /i "%~1"=="--tunnel" set TUNNEL=1
 rem Avvio one-click di FreeSic: prepara l'ambiente, avvia il server
 rem e apre automaticamente il sito nel browser.
 rem Stessa logica su Linux, macOS e Windows (vedi strumenti\avvia.py).

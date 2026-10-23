@@ -27,6 +27,7 @@ class TestAccount(unittest.TestCase):
         utenti.FILE_PIACI = os.path.join(self.dir, "mi_piace.json")
         utenti.FILE_SESSIONI = os.path.join(self.dir, "sessioni.json")
         utenti._sessioni.clear()
+        main._tentativi.clear()
         self.client = TestClient(main.app)
 
     def tearDown(self):
@@ -149,6 +150,16 @@ class TestAccount(unittest.TestCase):
         utenti._sessioni.clear()
         utenti._carica_sessioni()
         self.assertIsNone(utenti.utente_da_token(token))
+
+    def test_troppi_tentativi_di_accesso(self):
+        self.client.post("/api/auth/register", json={"username": "alessio", "password": "ciao123"})
+        self.client.post("/api/auth/logout")
+        codici = []
+        for _ in range(7):
+            r = self.client.post("/api/auth/login", json={"username": "alessio", "password": "sbagliata"})
+            codici.append(r.status_code)
+        self.assertEqual(codici[:6], [401] * 6)
+        self.assertEqual(codici[6], 429)
 
     def test_logout_rimuove_anche_dal_disco(self):
         self.client.post("/api/auth/register", json={"username": "alessio", "password": "ciao123"})

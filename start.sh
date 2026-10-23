@@ -16,4 +16,5 @@ if ! command -v "$PY" >/dev/null 2>&1; then
   exit 1
 fi
 
+if [ "$1" = "--tunnel" ]; then export TUNNEL=1; fi
 exec "$PY" strumenti/avvia.py

@@ -22,7 +22,7 @@ CONTENUTI = [
     "README.md",
     ".gitignore",
 ]
-STRUMENTI = ["__init__.py", "avvia.py", "prepara.py", "servizio.py"]
+STRUMENTI = ["__init__.py", "avvia.py", "prepara.py", "servizio.py", "tunnel.py"]
 
 
 def raccogli(piattaforma: str) -> list:

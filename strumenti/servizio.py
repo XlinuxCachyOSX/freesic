@@ -4,6 +4,7 @@ Viene eseguito con l'interprete del virtualenv, quindi ha a disposizione
 tutte le dipendenze. E' lo stesso file su Linux, macOS e Windows.
 """
 
+import atexit
 import os
 import sys
 import threading
@@ -18,7 +19,7 @@ sys.path.insert(0, str(BASE))
 import uvicorn  # noqa: E402
 
 from server.main import app  # noqa: E402
-from strumenti import prepara  # noqa: E402
+from strumenti import prepara, tunnel  # noqa: E402
 
 
 def apri_browser(sito: str) -> None:
@@ -75,9 +76,23 @@ def main() -> int:
         pass
 
     threading.Thread(target=apri_browser, args=(sito,), daemon=True).start()
+
+    pubblico = None
+    if tunnel.attivo():
+        print("  Tunnel Cloudflare: preparo l'indirizzo pubblico...", flush=True)
+        try:
+            pubblico = tunnel.Tunnel(porta)
+            pubblico.avvia()
+            atexit.register(pubblico.chiudi)
+        except Exception as e:  # il tunnel e' un extra: il server parte lo stesso
+            print(f"  Tunnel non disponibile: {e}", flush=True)
+            pubblico = None
+
     try:
         uvicorn.run(app, host=host, port=porta, log_level="info")
     finally:
+        if pubblico:
+            pubblico.chiudi()
         prepara.PID_FILE.unlink(missing_ok=True)
     return 0
 

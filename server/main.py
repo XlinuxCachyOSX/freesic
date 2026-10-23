@@ -1,6 +1,8 @@
 """API del player musicale: ricerca, album, playlist e stream audio senza pubblicità."""
 import asyncio
 import os
+import threading
+import time
 
 import httpx
 from fastapi import FastAPI, HTTPException, Query, Request, Response
@@ -172,13 +174,38 @@ async def registra(request: Request, response: Response):
     return {"autenticato": True, "utente": nome}
 
 
+_blocco_tentativi = threading.Lock()
+_tentativi: dict[str, list[float]] = {}
+_MAX_TENTATIVI = 6
+_FINESTRA = 300
+
+
+def _blocca_troppi_tentativi(chiave: str) -> None:
+    """Freno ai tentativi ripetuti di accesso (utile se il server e' pubblico)."""
+    ora = time.time()
+    with _blocco_tentativi:
+        recenti = [t for t in _tentativi.get(chiave, []) if ora - t < _FINESTRA]
+        _tentativi[chiave] = recenti
+        if len(recenti) >= _MAX_TENTATIVI:
+            raise HTTPException(
+                status_code=429,
+                detail="Troppi tentativi falliti: riprova tra qualche minuto.",
+            )
+
+
 @app.post("/api/auth/login")
 async def accedi(request: Request, response: Response):
     dati = await _corpo(request)
+    chiave = f"{request.client.host if request.client else '?'}|{str(dati.get('username', '')).strip().lower()}"
+    _blocca_troppi_tentativi(chiave)
     try:
         nome = utenti.accedi(dati.get("username", ""), dati.get("password", ""))
     except utenti.ErroreUtente as e:
+        with _blocco_tentativi:
+            _tentativi.setdefault(chiave, []).append(time.time())
         raise HTTPException(status_code=401, detail=str(e))
+    with _blocco_tentativi:
+        _tentativi.pop(chiave, None)
     token = utenti.token_sessione(nome)
     response.set_cookie(utenti.COOKIE, token, httponly=True, samesite="lax", max_age=utenti.DURATA_SESSIONE)
     return {"autenticato": True, "utente": nome}

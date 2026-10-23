@@ -101,6 +101,33 @@ computer ha più di una scheda di rete (Wi-Fi, cavo, VPN) prova gli altri
 indirizzi stampati. Per ascoltare solo da questo computer usa
 `HOST=127.0.0.1 ./start.sh`.
 
+### Da qualsiasi rete (anche in 4G)
+
+Per ascoltare fuori casa non serve aprire porte sul router: basta aggiungere
+`--tunnel` all'avvio e FreeSic passa da un tunnel HTTPS di Cloudflare.
+
+```bash
+./start.sh --tunnel        # Windows: start.bat --tunnel
+```
+
+Al primo uso scarica `cloudflared` (~40 MB, una volta sola) e poi stampa:
+
+```
+Da qualsiasi rete: https://parole-casuali.trycloudflare.com/
+```
+
+Inserisci quell'indirizzo nel menu dell'app Android (o aprilo da qualunque
+browser) e funziona in 4G, all'estero, da qualsiasi computer. L'indirizzo
+cambia a ogni avvio e vale finché FreeSic resta acceso: per chiuderlo basta
+`Ctrl+C`, e da quel momento il link non risponde più.
+
+Chi ha il link può usare il player: gli account restano protetti da password
+(dopo 6 tentativi sbagliati l'accesso viene bloccato per qualche minuto).
+Per avere un indirizzo fisso serve un dominio su Cloudflare: crea il tunnel
+con `cloudflared tunnel login`, `cloudflared tunnel create freesic`,
+`cloudflared tunnel route dns freesic musica.tuodominio.it` e avvialo con
+`cloudflared tunnel run --url http://127.0.0.1:8000 freesic`.
+
 ## Comandi manuali
 
 ```bash
@@ -113,6 +140,7 @@ Variabili d'ambiente supportate:
 |---|---|---|
 | `PORT` | `8000` | porta del server |
 | `HOST` | `0.0.0.0` | interfaccia di ascolto (`0.0.0.0` = tutta la rete locale, `127.0.0.1` = solo questo computer) |
+| `TUNNEL` | `0` | `1` = espone FreeSic su internet con un tunnel Cloudflare (come `--tunnel`) |
 
 ## API
 
@@ -186,6 +214,8 @@ Configurazione:
 3. Nell'app scegli **menu → Indirizzo server** e inserisci quell'indirizzo.
    Se il telefono non si collega, controlla che il firewall del computer
    permetta le connessioni in ingresso sulla porta 8000.
+4. Fuori casa (4G) usa l'indirizzo del tunnel: avvia con `--tunnel` e copia
+   la riga `Da qualsiasi rete` (vedi sopra).
 
 Su un emulatore Android l'indirizzo predefinito `http://10.0.2.2:8000/` punta
 già alla macchina che esegue l'emulatore.
