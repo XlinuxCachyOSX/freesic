@@ -58,7 +58,7 @@ def indirizzi_rete() -> list:
 
 def main() -> int:
     porta = int(os.environ.get("PORT", "8000") or 8000)
-    host = os.environ.get("HOST", "127.0.0.1") or "127.0.0.1"
+    host = os.environ.get("HOST", "0.0.0.0") or "0.0.0.0"
     mostrato = "127.0.0.1" if host == "0.0.0.0" else host
     sito = f"http://{mostrato}:{porta}/"
 

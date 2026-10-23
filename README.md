@@ -37,9 +37,9 @@ I file zip contengono il progetto pronto: si decomprime e si avvia.
 Serve Python 3.10 o successivo: al primo avvio lo script crea da solo
 l'ambiente virtuale e installa le dipendenze (serve una connessione internet
 solo per quella operazione). L'APK è il guscio: per ascoltare serve il server
-acceso sul computer (`./start.sh` con `HOST=0.0.0.0`) e l'indirizzo del PC da
-inserire nel menu dell'app. Ricerca, tema e "mi piace" sono le stesse cose
-del sito.
+acceso sul computer (`./start.sh`) e l'indirizzo del PC che compare nella riga
+"Dal telefono" all'avvio, da inserire nel menu dell'app. Ricerca, tema e
+"mi piace" sono le stesse cose del sito.
 
 ```
 freesic/
@@ -94,13 +94,12 @@ prepara l'ambiente (`strumenti/prepara.py`) e avvia il server
 (`strumenti/servizio.py`): la logica e' quindi identica su Linux, macOS e
 Windows.
 
-Per raggiungere il player dal telefono o da un altro computer della rete:
-
-```bash
-HOST=0.0.0.0 ./start.sh
-```
-
-Il server stampa l'indirizzo da usare (es. `http://192.168.1.78:8000/`).
+Il server ascolta già sulla rete locale, quindi lo puoi raggiungere dal
+telefono o da un altro computer: all'avvio stampa una riga
+`Dal telefono: http://192.168.1.78:8000/` con l'indirizzo da usare. Se il
+computer ha più di una scheda di rete (Wi-Fi, cavo, VPN) prova gli altri
+indirizzi stampati. Per ascoltare solo da questo computer usa
+`HOST=127.0.0.1 ./start.sh`.
 
 ## Comandi manuali
 
@@ -113,7 +112,7 @@ Variabili d'ambiente supportate:
 | variabile | default | descrizione |
 |---|---|---|
 | `PORT` | `8000` | porta del server |
-| `HOST` | `127.0.0.1` | interfaccia di ascolto |
+| `HOST` | `0.0.0.0` | interfaccia di ascolto (`0.0.0.0` = tutta la rete locale, `127.0.0.1` = solo questo computer) |
 
 ## API
 
@@ -181,13 +180,12 @@ l'installazione da sorgenti sconosciute.
 
 Configurazione:
 
-1. Sul computer avvia il server in ascolto sulla rete locale:
-   ```bash
-   HOST=0.0.0.0 ./start.sh
-   ```
-2. Scopri l'indirizzo IP del computer (`ip addr` / `ipconfig`).
-3. Nell'app scegli **menu → Indirizzo server** e inserisci
-   `http://<ip-del-computer>:8000/`.
+1. Sul computer avvia il server con `./start.sh` (o `start.bat` su Windows).
+2. All'avvio leggi la riga `Dal telefono: http://…` che compare nel terminale.
+   Se non c'è, il computer e il telefono non sono sulla stessa rete Wi-Fi.
+3. Nell'app scegli **menu → Indirizzo server** e inserisci quell'indirizzo.
+   Se il telefono non si collega, controlla che il firewall del computer
+   permetta le connessioni in ingresso sulla porta 8000.
 
 Su un emulatore Android l'indirizzo predefinito `http://10.0.2.2:8000/` punta
 già alla macchina che esegue l'emulatore.

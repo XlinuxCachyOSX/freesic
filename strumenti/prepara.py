@@ -182,7 +182,7 @@ def scegli_porta(porta: int, host: str) -> int:
     )
 
 
-def prepara(porta: int = 8000, host: str = "127.0.0.1") -> tuple[Path, int, str]:
+def prepara(porta: int = 8000, host: str = "0.0.0.0") -> tuple[Path, int, str]:
     """Prepara tutto e restituisce (interprete venv, porta, host)."""
     if sys.version_info < VERSIONE_MINIMA:
         raise SystemExit(

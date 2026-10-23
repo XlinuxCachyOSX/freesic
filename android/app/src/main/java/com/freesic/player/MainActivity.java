@@ -93,7 +93,7 @@ public class MainActivity extends Activity {
         errore.setTextColor(Color.parseColor("#F1F1F1"));
         errore.setTextSize(16);
         errore.setPadding(48, 48, 48, 48);
-        errore.setText("Server non raggiungibile.\n\nAvvia FreeSic sul computer con ./start.sh (HOST=0.0.0.0) e poi scegli l'indirizzo dal menu 'Indirizzo server'.\n\n"
+        errore.setText("Server non raggiungibile.\n\nAvvia FreeSic sul computer con ./start.sh e poi scegli l'indirizzo dal menu 'Indirizzo server' (all'avvio compare la riga 'Dal telefono').\n\n"
                 + "Esempio: http://192.168.1.10:8000/");
         FrameLayout root = (FrameLayout) web.getParent();
         if (root != null && root.getChildCount() < 2) {
